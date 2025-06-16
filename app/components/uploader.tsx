@@ -15,7 +15,7 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select" 
+} from "@/components/ui/select"
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 
@@ -37,15 +37,18 @@ export default function Uploader() {
   // Global configuration states
   const [aspect, setAspect] = useState('1:1')
   const [align, setAlign] = useState<'center' | 'left' | 'right'>('center') // Default to center
-  const [padding, setPadding] = useState(46)
+  const [paddingAllSides, setPaddingAllSides] = useState(46)
+  const [paddingTopText, setPaddingTopText] = useState(20)
+  const [paddingBetweenTextLines, setPaddingBetweenTextLines] = useState(10)
+  const [paddingBetweenMetaData, setPaddingBetweenMetaData] = useState(5);
   const [fontSizeMain, setFontSizeMain] = useState(36)
   const [fontSizeMeta, setFontSizeMeta] = useState(26)
+  const [jpegQuality, setJpegQuality] = useState(0.9); // New global state for JPEG quality, default 0.9
 
   // State to manage setting mode: 'global' or 'perCard'
   const [settingMode, setSettingMode] = useState<'global' | 'perCard'>('global')
 
   // Ref to hold canvas elements for each ImageCard when in global mode
-  // This is crucial for accessing the canvas data to download all.
   const canvasRefs = useRef<Record<string, HTMLCanvasElement | null>>({});
 
   const handleUploadClick = () => {
@@ -91,12 +94,13 @@ export default function Uploader() {
     let downloadCount = 0;
 
     for (const imgData of images) {
-        const canvas = canvasRefs.current[imgData.file.name]; // Use file name as a unique key for the ref
+        const canvas = canvasRefs.current[imgData.file.name];
         if (canvas) {
             try {
-                const dataURL = canvas.toDataURL('image/png');
+                // Changed to JPEG export with quality and .jpeg extension
+                const dataURL = canvas.toDataURL('image/jpeg', jpegQuality);
                 const base64Data = dataURL.split(',')[1];
-                zip.file(`${imgData.file.name.split('.')[0]}_framed.png`, base64Data, { base64: true });
+                zip.file(`${imgData.file.name.split('.')[0]}_framed.jpeg`, base64Data, { base64: true });
                 downloadCount++;
             } catch (error) {
                 console.error(`Failed to process image ${imgData.file.name}:`, error);
@@ -172,7 +176,6 @@ export default function Uploader() {
                 {/* Aspect Ratio */}
                 <div className="flex items-center gap-2">
                   <label>Aspect Ratio:</label>
-                  {/* Changed localAspect to aspect and setLocalAspect to setAspect */}
                   <Select value={aspect} onValueChange={(value) => setAspect(value)}>
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="Select an aspect ratio" />
@@ -190,7 +193,6 @@ export default function Uploader() {
                 {/* Alignment */}
                 <div className="flex items-center gap-2">
                   <label>Text Align:</label>
-                  {/* Changed localAlign to align and setLocalAlign to setAlign */}
                   <Select value={align} onValueChange={(value) => setAlign(value as 'center' | 'left' | 'right')}>
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="Select alignment" />
@@ -206,14 +208,47 @@ export default function Uploader() {
                   </Select>
                 </div>
 
-                <div className='flex flex-row gap-4'>
-                  {/* Padding */}
+                <div className='flex flex-row gap-4 flex-wrap'>
+                  {/* Canvas Padding */}
                   <div className="grid w-auto max-w-sm items-center gap-3">
-                    <Label>Padding:</Label>
+                    <Label>Canvas Padding:</Label>
                     <Input
                       type="number"
-                      value={padding}
-                      onChange={(e) => setPadding(Number(e.target.value))}
+                      value={paddingAllSides}
+                      onChange={(e) => setPaddingAllSides(Number(e.target.value))}
+                      className="border p-1 w-20 rounded"
+                    />
+                  </div>
+
+                  {/* Padding Top Text */}
+                  <div className="grid w-auto max-w-sm items-center gap-3">
+                    <Label>Gap Image to Text:</Label>
+                    <Input
+                      type="number"
+                      value={paddingTopText}
+                      onChange={(e) => setPaddingTopText(Number(e.target.value))}
+                      className="border p-1 w-20 rounded"
+                    />
+                  </div>
+
+                  {/* Padding Between Text Lines */}
+                  <div className="grid w-auto max-w-sm items-center gap-3">
+                    <Label>Gap Main to Meta Text:</Label>
+                    <Input
+                      type="number"
+                      value={paddingBetweenTextLines}
+                      onChange={(e) => setPaddingBetweenTextLines(Number(e.target.value))}
+                      className="border p-1 w-20 rounded"
+                    />
+                  </div>
+
+                  {/* Padding Between Metadata Items */}
+                  <div className="grid w-auto max-w-sm items-center gap-3">
+                    <Label>Gap Between Meta Data:</Label>
+                    <Input
+                      type="number"
+                      value={paddingBetweenMetaData}
+                      onChange={(e) => setPaddingBetweenMetaData(Number(e.target.value))}
                       className="border p-1 w-20 rounded"
                     />
                   </div>
@@ -239,8 +274,22 @@ export default function Uploader() {
                       className="border p-1 w-16 rounded"
                     />
                   </div>
+
+                  {/* JPEG Quality Control */}
+                  <div className="grid w-auto max-w-sm items-center gap-3">
+                    <Label>JPEG Quality (0.1-1.0):</Label>
+                    <Input
+                      type="number"
+                      step="0.1" // Allows stepping by 0.1
+                      min="0.1"
+                      max="1.0"
+                      value={jpegQuality}
+                      onChange={(e) => setJpegQuality(Number(e.target.value))}
+                      className="border p-1 w-20 rounded"
+                    />
+                  </div>
                 </div>
-                
+
               </div>
             </>
           )}
@@ -260,16 +309,19 @@ export default function Uploader() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {images.map((img, idx) => (
           <ImageCard
-            key={img.file.name} // Use file.name as a stable key
+            key={img.file.name}
             image={img}
             settingMode={settingMode}
-            // Pass global settings if in global mode
             globalAspect={aspect}
             globalAlign={align}
-            globalPadding={padding}
+            globalPaddingAllSides={paddingAllSides}
+            globalPaddingTopText={paddingTopText}
+            globalPaddingBetweenTextLines={paddingBetweenTextLines}
+            globalPaddingBetweenMetaData={paddingBetweenMetaData}
             globalFontSizeMain={fontSizeMain}
             globalFontSizeMeta={fontSizeMeta}
-            setCanvasRef={setCanvasRef} // Pass the ref callback
+            globalJpegQuality={jpegQuality} // Pass new global JPEG quality
+            setCanvasRef={setCanvasRef}
           />
         ))}
       </div>

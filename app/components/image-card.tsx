@@ -10,7 +10,7 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select" 
+} from "@/components/ui/select"
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -20,9 +20,13 @@ interface Props {
   settingMode: 'global' | 'perCard';
   globalAspect?: string;
   globalAlign?: 'center' | 'left' | 'right';
-  globalPadding?: number;
+  globalPaddingAllSides?: number;
+  globalPaddingTopText?: number;
+  globalPaddingBetweenTextLines?: number;
+  globalPaddingBetweenMetaData?: number;
   globalFontSizeMain?: number;
   globalFontSizeMeta?: number;
+  globalJpegQuality?: number; // New prop for JPEG quality
   setCanvasRef?: (key: string, node: HTMLCanvasElement | null) => void;
 }
 
@@ -38,9 +42,13 @@ export default function ImageCard({
   settingMode,
   globalAspect,
   globalAlign,
-  globalPadding,
+  globalPaddingAllSides,
+  globalPaddingTopText,
+  globalPaddingBetweenTextLines,
+  globalPaddingBetweenMetaData,
   globalFontSizeMain,
   globalFontSizeMeta,
+  globalJpegQuality, // Destructure new prop
   setCanvasRef,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -49,18 +57,24 @@ export default function ImageCard({
   // Per-card states (used when settingMode is 'perCard')
   const [localAspect, setLocalAspect] = useState('1:1')
   const [localAlign, setLocalAlign] = useState<'center' | 'left' | 'right'>('center')
-  const [localPadding, setLocalPadding] = useState(46)
+  const [localPaddingAllSides, setLocalPaddingAllSides] = useState(46)
+  const [localPaddingTopText, setLocalPaddingTopText] = useState(20)
+  const [localPaddingBetweenTextLines, setLocalPaddingBetweenTextLines] = useState(10)
+  const [localPaddingBetweenMetaData, setLocalPaddingBetweenMetaData] = useState(5);
   const [localFontSizeMain, setLocalFontSizeMain] = useState(36)
   const [localFontSizeMeta, setLocalFontSizeMeta] = useState(26)
+  const [localJpegQuality, setLocalJpegQuality] = useState(0.9); // New local state for JPEG quality, default 0.9
 
   // Determine which base settings to use based on the settingMode prop
   const baseAspect = settingMode === 'global' ? globalAspect : localAspect;
   const baseAlign = settingMode === 'global' ? globalAlign : localAlign;
-  const basePadding = (settingMode === 'global' ? globalPadding : localPadding) ?? 46;
+  const basePaddingAllSides = (settingMode === 'global' ? globalPaddingAllSides : localPaddingAllSides) ?? 46;
+  const basePaddingTopText = (settingMode === 'global' ? globalPaddingTopText : localPaddingTopText) ?? 20;
+  const basePaddingBetweenTextLines = (settingMode === 'global' ? globalPaddingBetweenTextLines : localPaddingBetweenTextLines) ?? 10;
+  const basePaddingBetweenMetaData = (settingMode === 'global' ? globalPaddingBetweenMetaData : localPaddingBetweenMetaData) ?? 5;
   const baseFontSizeMain = (settingMode === 'global' ? globalFontSizeMain : localFontSizeMain) ?? 36;
   const baseFontSizeMeta = (settingMode === 'global' ? globalFontSizeMeta : localFontSizeMeta) ?? 26;
-
-  const textTopPadding = 20; // Original constant for the gap between image and text
+  const baseJpegQuality = (settingMode === 'global' ? globalJpegQuality : localJpegQuality) ?? 0.9; // Use new base variable
 
   useEffect(() => {
     if (setCanvasRef) {
@@ -85,93 +99,77 @@ export default function ImageCard({
 
       const scale = window.devicePixelRatio || 1
 
-      const width = img.width
-      const height = img.height
-      let cropW = width
-      let cropH = height
+      const imageOriginalWidth = img.width
+      const imageOriginalHeight = img.height
+      let imageCropWidth = imageOriginalWidth
+      let imageCropHeight = imageOriginalHeight
 
       // Crop logic - applied to the image itself
       if (baseAspect === '1:1') {
-        const size = Math.min(width, height)
-        cropW = size
-        cropH = size
+        const size = Math.min(imageOriginalWidth, imageOriginalHeight)
+        imageCropWidth = size
+        imageCropHeight = size
       } else if (baseAspect && baseAspect.includes(':')) {
         const [w, h] = baseAspect.split(':').map(Number)
         const targetRatio = w / h
-        if (width / height > targetRatio) {
-          cropW = height * targetRatio
-          cropH = height
+        if (imageOriginalWidth / imageOriginalHeight > targetRatio) {
+          imageCropWidth = imageOriginalHeight * targetRatio
+          imageCropHeight = imageOriginalHeight
         } else {
-          cropW = width
-          cropH = width / targetRatio
+          imageCropWidth = imageOriginalWidth
+          imageCropHeight = imageOriginalWidth / targetRatio
         }
       }
 
       // Calculate scaled padding and font sizes based on the current cropped image width
       // Apply Math.max to ensure minimum sizes
-      const scaledPadding = Math.max(MIN_PADDING, (basePadding / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
-      const scaledFontSizeMain = Math.max(MIN_FONT_SIZE, (baseFontSizeMain / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
-      const scaledFontSizeMeta = Math.max(MIN_FONT_SIZE, (baseFontSizeMeta / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
-      // Apply Math.max to scaledTextTopPadding as well, to ensure a minimum gap
-      const scaledTextTopPadding = Math.max(MIN_PADDING, (textTopPadding / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
+      const scaledPaddingAllSides = Math.max(MIN_PADDING, (basePaddingAllSides / FIGMA_REFERENCE_IMAGE_WIDTH) * imageCropWidth);
+      const scaledPaddingTopText = Math.max(MIN_PADDING, (basePaddingTopText / FIGMA_REFERENCE_IMAGE_WIDTH) * imageCropWidth);
+      const scaledPaddingBetweenTextLines = Math.max(MIN_PADDING, (basePaddingBetweenTextLines / FIGMA_REFERENCE_IMAGE_WIDTH) * imageCropWidth);
+      const scaledPaddingBetweenMetaData = Math.max(0, (basePaddingBetweenMetaData / FIGMA_REFERENCE_IMAGE_WIDTH) * imageCropWidth);
+
+      const scaledFontSizeMain = Math.max(MIN_FONT_SIZE, (baseFontSizeMain / FIGMA_REFERENCE_IMAGE_WIDTH) * imageCropWidth);
+      const scaledFontSizeMeta = Math.max(MIN_FONT_SIZE, (baseFontSizeMeta / FIGMA_REFERENCE_IMAGE_WIDTH) * imageCropWidth);
 
       // Calculate overall canvas dimensions using scaled values
-      // totalTextHeight now accounts for the baseline adjustment
-      const totalTextHeight = scaledFontSizeMain // Height for first line (from baseline to top)
-                              + (scaledFontSizeMain - scaledFontSizeMeta * 0.3) // Approximate height from baseline to bottom of descenders if needed, but the original (scaledFontSizeMeta * 0.3) was just a tight line spacing.
-                              + scaledFontSizeMeta // Height for second line
-                              + scaledTextTopPadding; // Explicit gap
+      const totalTextBlockHeight = scaledFontSizeMain + scaledPaddingBetweenTextLines + scaledFontSizeMeta;
 
-      // Let's refine totalTextHeight for accuracy based on new baseline logic
-      // It's the sum of:
-      // - The 'gap' between image bottom and the visual top of the first line (scaledTextTopPadding)
-      // - The height of the first line (scaledFontSizeMain, roughly for ascenders/main part)
-      // - The spacing between the two lines (scaledFontSizeMain, which was there for second line offset, and 0.3 * scaledFontSizeMeta)
-      // - The height of the second line (scaledFontSizeMeta)
-      const adjustedTotalTextHeight = scaledTextTopPadding + // Gap between image bottom and text block top
-                                      scaledFontSizeMain + // Height of the first text line
-                                      (scaledFontSizeMain * 0.3) + // Spacing below first line
-                                      scaledFontSizeMeta; // Height of the second text line
+      const canvasWidth = imageCropWidth + scaledPaddingAllSides * 2;
+      const canvasHeight = imageCropHeight + scaledPaddingAllSides * 2 + scaledPaddingTopText + totalTextBlockHeight;
 
 
-      const canvasW = cropW + scaledPadding * 2;
-      // Re-calculate canvasH using the adjustedTotalTextHeight to ensure enough space
-      const canvasH = cropH + scaledPadding * 2 + adjustedTotalTextHeight;
-
-
-      canvas.width = canvasW * scale
-      canvas.height = canvasH * scale
+      canvas.width = canvasWidth * scale
+      canvas.height = canvasHeight * scale
       canvas.style.width = '100%'
       canvas.style.height = 'auto'
       ctx.scale(scale, scale)
 
       // White background
       ctx.fillStyle = '#fff'
-      ctx.fillRect(0, 0, canvasW, canvasH)
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight)
 
       // Draw image
-      let sx = 0
-      let sy = 0
+      let imageSourceX = 0
+      let imageSourceY = 0
       if (baseAspect === '1:1') {
-        sx = (width - cropW) / 2
-        sy = (height - cropH) / 2
+        imageSourceX = (imageOriginalWidth - imageCropWidth) / 2
+        imageSourceY = (imageOriginalHeight - imageCropHeight) / 2
       }
 
       ctx.drawImage(
         img,
-        sx,
-        sy,
-        cropW,
-        cropH,
-        scaledPadding,
-        scaledPadding,
-        cropW,
-        cropH
+        imageSourceX,
+        imageSourceY,
+        imageCropWidth,
+        imageCropHeight,
+        scaledPaddingAllSides,
+        scaledPaddingAllSides,
+        imageCropWidth,
+        imageCropHeight
       )
 
       // Calculate the Y-coordinate for the baseline of the first line of text
-      // This ensures a clear gap of scaledTextTopPadding between image bottom and the *visible top* of the text.
-      const firstLineBaselineY = scaledPadding + cropH + scaledTextTopPadding + scaledFontSizeMain;
+      const firstLineTextBaselineY = scaledPaddingAllSides + imageCropHeight + scaledPaddingTopText + scaledFontSizeMain;
 
       // --- Text Alignment Logic ---
       let shotOnLineStartX: number = 0;
@@ -186,42 +184,43 @@ export default function ImageCard({
       const makerModelWidth = ctx.measureText(makerModelText).width;
       const fullShotOnLineTextWidth = shotOnPrefixWidth + makerModelWidth;
 
+      const metadataSpacer = ' '.repeat(Math.ceil(scaledPaddingBetweenMetaData / (scaledFontSizeMeta / 2)));
+      const metadataTextContent = `${image.focalLength}${metadataSpacer}${image.aperture}${metadataSpacer}${image.shutter}${metadataSpacer}ISO${image.iso}`;
+
       ctx.font = `${scaledFontSizeMeta}px 'Open Sans', sans-serif`;
-      const metadataTextWidth = ctx.measureText(`${image.focalLength} ${image.aperture} ${image.shutter} ${image.iso}`).width;
+      const metadataTextWidth = ctx.measureText(metadataTextContent).width;
 
       if (baseAlign === 'left') {
-        shotOnLineStartX = scaledPadding;
-        metaLineStartX = scaledPadding;
+        shotOnLineStartX = scaledPaddingAllSides;
+        metaLineStartX = scaledPaddingAllSides;
       } else if (baseAlign === 'center') {
-        shotOnLineStartX = canvasW / 2 - fullShotOnLineTextWidth / 2;
-        metaLineStartX = canvasW / 2 - metadataTextWidth / 2;
+        shotOnLineStartX = canvasWidth / 2 - fullShotOnLineTextWidth / 2;
+        metaLineStartX = canvasWidth / 2 - metadataTextWidth / 2;
       } else if (baseAlign === 'right') {
-        shotOnLineStartX = canvasW - scaledPadding - fullShotOnLineTextWidth;
-        metaLineStartX = canvasW - scaledPadding - metadataTextWidth;
+        shotOnLineStartX = canvasWidth - scaledPaddingAllSides - fullShotOnLineTextWidth;
+        metaLineStartX = canvasWidth - scaledPaddingAllSides - metadataTextWidth;
       }
 
       ctx.textAlign = 'left';
+      ctx.fillStyle = '#000'; // Ensure text color is black
 
       // Draw "Shot on " part (regular font)
       ctx.font = `${scaledFontSizeMain}px 'Open Sans', sans-serif`;
-      ctx.fillStyle = '#000'; // Ensure text color is black
-      ctx.fillText(shotOnPrefix, shotOnLineStartX, firstLineBaselineY);
+      ctx.fillText(shotOnPrefix, shotOnLineStartX, firstLineTextBaselineY);
 
       // Draw Maker and Model part (bold font)
       ctx.font = `bold ${scaledFontSizeMain}px 'Open Sans', sans-serif`;
-      ctx.fillStyle = '#000'; // Ensure text color is black
-      ctx.fillText(makerModelText, shotOnLineStartX + shotOnPrefixWidth, firstLineBaselineY);
+      ctx.fillText(makerModelText, shotOnLineStartX + shotOnPrefixWidth, firstLineTextBaselineY);
 
       // Calculate the Y-coordinate for the baseline of the metadata text
-      const secondLineBaselineY = firstLineBaselineY + (scaledFontSizeMain * 0.3) + scaledFontSizeMeta; // Adjusted based on new firstLineBaselineY meaning
+      const secondLineTextBaselineY = firstLineTextBaselineY + scaledPaddingBetweenTextLines + scaledFontSizeMeta;
 
       // Draw Metadata text
       ctx.font = `${scaledFontSizeMeta}px 'Open Sans', sans-serif`;
-      ctx.fillStyle = '#000'; // Ensure text color is black
       ctx.fillText(
-        `${image.focalLength} ${image.aperture} ${image.shutter} ${image.iso}`,
+        metadataTextContent,
         metaLineStartX,
-        secondLineBaselineY
+        secondLineTextBaselineY
       );
 
       setReady(true)
@@ -230,16 +229,20 @@ export default function ImageCard({
     image,
     baseAspect,
     baseAlign,
-    basePadding,
+    basePaddingAllSides,
+    basePaddingTopText,
+    basePaddingBetweenTextLines,
+    basePaddingBetweenMetaData,
     baseFontSizeMain,
     baseFontSizeMeta,
-    textTopPadding
+    baseJpegQuality, // Dependency added for redraw on quality change
   ])
 
   const download = () => {
     const link = document.createElement('a')
-    link.download = `framed-${image.file.name.split('.')[0]}.png`
-    link.href = canvasRef.current!.toDataURL('image/png')
+    // Changed to JPEG export with quality and .jpeg extension
+    link.download = `framed-${image.file.name.split('.')[0]}.jpeg`
+    link.href = canvasRef.current!.toDataURL('image/jpeg', baseJpegQuality)
     link.click()
   }
 
@@ -264,7 +267,7 @@ export default function ImageCard({
 
           {/* Text Alignment */}
           <Select value={localAlign} onValueChange={(value) => setLocalAlign(value as 'center' | 'left' | 'right')}>
-            <SelectTrigger className="w-[180px]"> {/* You can adjust the width as needed */}
+            <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Select alignment" />
             </SelectTrigger>
             <SelectContent>
@@ -277,13 +280,46 @@ export default function ImageCard({
             </SelectContent>
         </Select>
 
-          {/* Padding */}
+          {/* Canvas Padding */}
           <div>
-            <Label className="mr-2">Padding (Base)</Label>
+            <Label className="mr-2">Canvas Padding</Label>
             <Input
               type="number"
-              value={localPadding}
-              onChange={(e) => setLocalPadding(Number(e.target.value))}
+              value={localPaddingAllSides}
+              onChange={(e) => setLocalPaddingAllSides(Number(e.target.value))}
+              className="border p-1 w-20 rounded"
+            />
+          </div>
+
+          {/* Padding Top Text (Image to Main Text) */}
+          <div>
+            <Label className="mr-2">Gap Image to Text</Label>
+            <Input
+              type="number"
+              value={localPaddingTopText}
+              onChange={(e) => setLocalPaddingTopText(Number(e.target.value))}
+              className="border p-1 w-20 rounded"
+            />
+          </div>
+
+          {/* Padding Between Text Lines (Main Text to Meta Text) */}
+          <div>
+            <Label className="mr-2">Gap Main to Meta Text</Label>
+            <Input
+              type="number"
+              value={localPaddingBetweenTextLines}
+              onChange={(e) => setLocalPaddingBetweenTextLines(Number(e.target.value))}
+              className="border p-1 w-20 rounded"
+            />
+          </div>
+
+          {/* Padding Between Metadata Items */}
+          <div>
+            <Label className="mr-2">Gap Between Meta Data</Label>
+            <Input
+              type="number"
+              value={localPaddingBetweenMetaData}
+              onChange={(e) => setLocalPaddingBetweenMetaData(Number(e.target.value))}
               className="border p-1 w-20 rounded"
             />
           </div>
@@ -307,6 +343,20 @@ export default function ImageCard({
               value={localFontSizeMeta}
               onChange={(e) => setLocalFontSizeMeta(Number(e.target.value))}
               className="border p-1 w-16 rounded"
+            />
+          </div>
+
+          {/* JPEG Quality Control */}
+          <div>
+            <Label className="mr-2">JPEG Quality (0.1-1.0)</Label>
+            <Input
+              type="number"
+              step="0.1" // Allows stepping by 0.1
+              min="0.1"
+              max="1.0"
+              value={localJpegQuality}
+              onChange={(e) => setLocalJpegQuality(Number(e.target.value))}
+              className="border p-1 w-20 rounded"
             />
           </div>
 
