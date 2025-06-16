@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Uploader from './components/uploader'
+import Uploader from './components/App'
 
 export default function Home() {
   return (
