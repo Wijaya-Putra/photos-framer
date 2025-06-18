@@ -47,12 +47,12 @@ export default function App() {
   const [globalAspect, setGlobalAspect] = useState('1:1')
   const [globalAlign, setGlobalAlign] = useState<'center' | 'left' | 'right'>('center')
   const [globalPaddingAllSides, setGlobalPaddingAllSides] = useState(46)
-  const [globalPaddingTopText, setGlobalPaddingTopText] = useState(20)
-  const [globalPaddingBetweenTextLines, setGlobalPaddingBetweenTextLines] = useState(10)
-  const [globalPaddingBetweenMetaData, setGlobalPaddingBetweenMetaData] = useState(5)
+  const [globalPaddingTopText, setGlobalPaddingTopText] = useState(70)
+  const [globalPaddingBetweenTextLines, setGlobalPaddingBetweenTextLines] = useState(12)
+  const [globalPaddingBetweenMetaData, setGlobalPaddingBetweenMetaData] = useState(12)
   const [globalFontSizeMain, setGlobalFontSizeMain] = useState(36)
   const [globalFontSizeMeta, setGlobalFontSizeMeta] = useState(26)
-  const [globalJpegQuality, setGlobalJpegQuality] = useState(0.9)
+  const [globalJpegQuality, setGlobalJpegQuality] = useState(0.4)
 
   // State for the main UI mode
   const [activeMode, setActiveMode] = useState<'global' | 'individual'>('global')

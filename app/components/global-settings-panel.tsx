@@ -37,12 +37,12 @@ export default function GlobalSettingsPanel({
     setAspect('1:1');
     setAlign('center');
     setPaddingAllSides(46);
-    setPaddingTopText(20);
-    setPaddingBetweenTextLines(10);
-    setPaddingBetweenMetaData(5);
+    setPaddingTopText(70);
+    setPaddingBetweenTextLines(12);
+    setPaddingBetweenMetaData(12);
     setFontSizeMain(36);
     setFontSizeMeta(26);
-    setJpegQuality(0.9);
+    setJpegQuality(0.4);
   };
 
   return (
