@@ -1,7 +1,10 @@
+// app/layout.tsx
 import type { Metadata } from "next";
+import { Navbar } from "./components/Navbar";
 import { Open_Sans } from "next/font/google";
-import { SpeedInsights } from "@vercel/speed-insights/next"
-import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
+import SmoothScroll from './components/smooth-scroll';
 import "./globals.css";
 
 const openSans = Open_Sans({
@@ -10,7 +13,7 @@ const openSans = Open_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Photos Filter",
+  title: "Photos Framer",
   description: "Photos Metadata Framer",
 };
 
@@ -27,10 +30,13 @@ export default function RootLayout({
         type="image/<generated>"
         sizes="<generated>"
       />
-      <body
-        className={`${openSans.variable} ${openSans.variable} antialiased`}
-      >
-        {children}
+      <body className={`${openSans.variable} antialiased`}>
+        <Navbar />
+        <SmoothScroll>
+          {children}
+        </SmoothScroll>
+        <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );

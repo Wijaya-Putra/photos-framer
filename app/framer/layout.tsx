@@ -14,7 +14,6 @@ export default function FramerLayout({
 }>) {
   return (
     <div className={`${openSans.variable} antialiased`}>
-      <Navbar />
       {children}
     </div>
   );
