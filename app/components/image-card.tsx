@@ -2,7 +2,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { ImageData } from './App';
+import { ImageData } from '../types'; // Corrected Path
 
 interface Props {
   image: ImageData;
@@ -13,6 +13,8 @@ interface Props {
   globalPaddingBottom: number;
   globalPaddingLeft: number;
   globalPaddingRight: number;
+  // (The rest of the file is unchanged)
+  // ...
   globalPaddingTopText: number;
   globalPaddingBetweenTextLines: number;
   globalPaddingBetweenMetaData: number;
@@ -88,14 +90,10 @@ export default function ImageCard({
       let cropW = imgNaturalWidth;
       let cropH = imgNaturalHeight;
 
-      console.log(`[ImageCard - ${image.file.name}] Original Image Natural Dims: ${imgNaturalWidth}x${imgNaturalHeight}`);
-      console.log(`[ImageCard - ${image.file.name}] Current baseAspect: "${baseAspect}"`);
-
       if (baseAspect === '1:1') {
         const size = Math.min(imgNaturalWidth, imgNaturalHeight);
         cropW = size;
         cropH = size;
-        console.log(`[ImageCard - ${image.file.name}] *** 1:1 Aspect Selected *** Calculated Crop Dims (square): ${cropW}x${cropH}`);
       } else if (baseAspect && baseAspect.includes(':')) {
         const [w, h] = baseAspect.split(':').map(Number);
         const targetRatio = w / h;
@@ -106,41 +104,28 @@ export default function ImageCard({
           cropW = imgNaturalWidth;
           cropH = imgNaturalWidth / targetRatio;
         }
-        console.log(`[ImageCard - ${image.file.name}] Selected Custom Aspect (${baseAspect}). Calculated Crop Dims: ${cropW}x${cropH}`);
-      } else {
-        console.log(`[ImageCard - ${image.file.name}] No specific aspect ratio selected. Using original image dimensions for crop: ${cropW}x${cropH}`);
       }
 
       cropW = Math.floor(cropW);
       cropH = Math.floor(cropH);
-      console.log(`[ImageCard - ${image.file.name}] Final Cropped Image Dims (for drawImage source/dest): ${cropW}x${cropH}`);
-
 
       const scaledPaddingTop = Math.max(MIN_PADDING, (basePaddingTop / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
       const scaledPaddingBottom = Math.max(MIN_PADDING, (basePaddingBottom / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
       const scaledPaddingLeft = Math.max(MIN_PADDING, (basePaddingLeft / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
       const scaledPaddingRight = Math.max(MIN_PADDING, (basePaddingRight / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
-
       const scaledPaddingTopText = Math.max(MIN_PADDING, (basePaddingTopText / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
       const scaledPaddingBetweenTextLines = Math.max(MIN_PADDING, (basePaddingBetweenTextLines / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
       const scaledPaddingBetweenMetaData = Math.max(MIN_PADDING, (basePaddingBetweenMetaData / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
-
       const scaledFontSizeMain = Math.max(MIN_FONT_SIZE, (baseFontSizeMain / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
       const scaledFontSizeMeta = Math.max(MIN_FONT_SIZE, (baseFontSizeMeta / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
-
-      const totalTextHeight = scaledPaddingTopText +
-                              scaledFontSizeMain +
-                              scaledPaddingBetweenTextLines +
-                              scaledFontSizeMeta;
-
+      const totalTextHeight = scaledPaddingTopText + scaledFontSizeMain + scaledPaddingBetweenTextLines + scaledFontSizeMeta;
       const canvasInternalW = cropW + scaledPaddingLeft + scaledPaddingRight;
       const canvasInternalH = cropH + scaledPaddingTop + scaledPaddingBottom + totalTextHeight;
 
-      canvas.width = Math.floor(canvasInternalW * scale); // Device pixels
-      canvas.height = Math.floor(canvasInternalH * scale); // Device pixels
+      canvas.width = Math.floor(canvasInternalW * scale);
+      canvas.height = Math.floor(canvasInternalH * scale);
 
       ctx.scale(scale, scale);
-
       ctx.fillStyle = '#fff';
       ctx.fillRect(0, 0, canvasInternalW, canvasInternalH);
 
@@ -158,46 +143,34 @@ export default function ImageCard({
         cropW,
         cropH
       );
-      console.log(`[ImageCard - ${image.file.name}] drawImage parameters: sx=${sx}, sy=${sy}, sWidth=${cropW}, sHeight=${cropH}, dX=${scaledPaddingLeft}, dY=${scaledPaddingTop}, dWidth=${cropW}, dHeight=${cropH}`);
-      console.log(`[ImageCard - ${image.file.name}] Canvas Internal Drawing Dims (CSS px before device scaling): ${canvasInternalW}x${canvasInternalH}`);
-      console.log(`[ImageCard - ${image.file.name}] Canvas Element Internal Resolution (device px): ${canvas.width}x${canvas.height}`);
-
 
       const textBlockYStart = scaledPaddingTop + cropH + scaledPaddingTopText;
       const firstLineBaselineY = textBlockYStart + scaledFontSizeMain;
       const secondLineBaselineY = firstLineBaselineY + scaledPaddingBetweenTextLines + scaledFontSizeMeta;
-
       let shotOnLineStartX: number;
       let metaLineStartX: number;
-
       const shotOnPrefix = 'Shot on ';
       const makerModelText = `${image.make} ${image.model}`;
-
       ctx.font = `${scaledFontSizeMain}px 'Open Sans', sans-serif`;
       const shotOnPrefixWidth = ctx.measureText(shotOnPrefix).width;
       ctx.font = `bold ${scaledFontSizeMain}px 'Open Sans', sans-serif`;
       const makerModelWidth = ctx.measureText(makerModelText).width;
       const fullShotOnLineTextWidth = shotOnPrefixWidth + makerModelWidth;
-
       ctx.font = `${scaledFontSizeMeta}px 'Open Sans', sans-serif`;
-      // MODIFIED: Added "ISO " prefix back to image.iso if it exists
       const metadataItems = [
         image.focalLength,
         image.aperture,
         image.shutter,
-        image.iso ? `ISO ${image.iso}` : '' // Conditionally add "ISO "
+        image.iso ? `ISO ${image.iso}` : ''
       ].filter(Boolean);
-
       let fullMetadataLineTextWidth = 0;
       const gap = scaledPaddingBetweenMetaData;
-
       metadataItems.forEach((item, index) => {
         fullMetadataLineTextWidth += ctx.measureText(item).width;
         if (index < metadataItems.length - 1) {
           fullMetadataLineTextWidth += gap;
         }
       });
-
 
       if (baseAlign === 'left') {
         shotOnLineStartX = scaledPaddingLeft;
@@ -215,13 +188,10 @@ export default function ImageCard({
 
       ctx.textAlign = 'left';
       ctx.fillStyle = '#000';
-
       ctx.font = `${scaledFontSizeMain}px 'Open Sans', sans-serif`;
       ctx.fillText(shotOnPrefix, shotOnLineStartX, firstLineBaselineY);
-
       ctx.font = `bold ${scaledFontSizeMain}px 'Open Sans', sans-serif`;
       ctx.fillText(makerModelText, shotOnLineStartX + shotOnPrefixWidth, firstLineBaselineY);
-
       ctx.font = `${scaledFontSizeMeta}px 'Open Sans', sans-serif`;
       let currentX = metaLineStartX;
       metadataItems.forEach((item, index) => {
@@ -232,8 +202,6 @@ export default function ImageCard({
           currentX += gap;
         }
       });
-
-
       setReady(true)
     }
   }, [
