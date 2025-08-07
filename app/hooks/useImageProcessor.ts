@@ -2,17 +2,15 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react';
-import { extractMetadata } from '../lib/metadata'; // Corrected Path
+import { extractMetadata } from '../lib/metadata';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
-import { ImageData } from '../types'; // Corrected Path
+import { ImageData } from '../types';
 
 export function useImageProcessor() {
   const [images, setImages] = useState<ImageData[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // (The rest of the file is unchanged)
-  // ...
   const [globalAspect, setGlobalAspect] = useState('1:1');
   const [globalAlign, setGlobalAlign] = useState<'center' | 'left' | 'right'>('center');
   const [globalPaddingTop, setGlobalPaddingTop] = useState(46);
@@ -25,7 +23,10 @@ export function useImageProcessor() {
   const [globalFontSizeMain, setGlobalFontSizeMain] = useState(36);
   const [globalFontSizeMeta, setGlobalFontSizeMeta] = useState(26);
   const [globalJpegQuality, setGlobalJpegQuality] = useState(0.9);
-  const [activeMode, setActiveMode] = useState<'global' | 'individual'>('global');
+  
+  // Changed the default mode to 'individual'
+  const [activeMode, setActiveMode] = useState<'global' | 'individual'>('individual');
+  
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const canvasRefs = useRef<Record<string, HTMLCanvasElement | null>>({});
 

@@ -7,7 +7,6 @@ import { Input } from "../ui/input"
 import { Button } from "../ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { Separator } from "../ui/separator"
-import { Badge } from "../ui/badge"
 import { Download, ImageIcon, Palette } from "lucide-react"
 import ImageCard from "../image-card"
 import { ImageData } from "@/app/types"
@@ -17,7 +16,6 @@ interface IndividualSettingsPanelProps {
   selectedImageId: string | null;
   setSelectedImageId: (id: string | null) => void;
   setCanvasRef: (key: string, node: HTMLCanvasElement | null) => void;
-  // This is the corrected type definition
   onIndividualSettingChange: (imageId: string, settingName: keyof Omit<ImageData, 'file' | 'url' | 'make' | 'model' | 'focalLength' | 'aperture' | 'shutter' | 'iso'>, newValue: any) => void;
   globalSettings: {
     aspect: string;
@@ -64,41 +62,12 @@ export default function IndividualSettingsPanel({
 
   return (
     <div className="space-y-6">
-      <div className="space-y-3">
-        <Label className="text-base font-medium">Select Image to Configure</Label>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {images.map((image) => (
-            <Card
-              key={image.file.name}
-              className={`cursor-pointer transition-all hover:shadow-md ${
-                selectedImageId === image.file.name ? "ring-2 ring-blue-500 bg-blue-50" : ""
-              }`}
-              onClick={() => setSelectedImageId(image.file.name)}
-            >
-              <CardContent className="p-4">
-                <div className="aspect-video bg-slate-200 rounded-lg mb-3 overflow-hidden">
-                  <img
-                    src={image.url || "/placeholder.svg"}
-                    alt={image.file.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <p className="text-sm font-medium truncate">{image.file.name}</p>
-                {selectedImageId === image.file.name && <Badge className="mt-2">Currently Editing</Badge>}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-
-      <Separator />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-sm flex items-center gap-2">
               <Palette className="h-4 w-4" />
-              Frame Settings for Selected Image
+              Frame Settings
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -107,9 +76,7 @@ export default function IndividualSettingsPanel({
                 <div className="space-y-2">
                   <Label htmlFor="individual-aspect-ratio">Aspect Ratio</Label>
                   <Select value={selectedImage.individualAspect} onValueChange={(value) => onIndividualSettingChange(selectedImage.file.name, 'individualAspect', value)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="1:1">1:1 (Square)</SelectItem>
                       <SelectItem value="4:3">4:3 (Standard)</SelectItem>
@@ -121,9 +88,7 @@ export default function IndividualSettingsPanel({
                 <div className="space-y-2">
                   <Label htmlFor="individual-text-align">Text Alignment</Label>
                   <Select value={selectedImage.individualAlign} onValueChange={(value) => onIndividualSettingChange(selectedImage.file.name, 'individualAlign', value as 'center' | 'left' | 'right')}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="left">Left</SelectItem>
                       <SelectItem value="center">Center</SelectItem>
@@ -131,6 +96,7 @@ export default function IndividualSettingsPanel({
                     </SelectContent>
                   </Select>
                 </div>
+                <Separator />
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="individual-padding-top">Padding Top</Label>
@@ -161,18 +127,40 @@ export default function IndividualSettingsPanel({
                   <Label htmlFor="individual-padding-between-meta-data">Gap Between Meta Data</Label>
                   <Input id="individual-padding-between-meta-data" type="number" value={selectedImage.individualPaddingBetweenMetaData} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualPaddingBetweenMetaData', Number(e.target.value))} />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="individual-font-size-main">Main Font Size</Label>
-                  <Input id="individual-font-size-main" type="number" value={selectedImage.individualFontSizeMain} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualFontSizeMain', Number(e.target.value))} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="individual-font-size-meta">Meta Font Size</Label>
-                  <Input id="individual-font-size-meta" type="number" value={selectedImage.individualFontSizeMeta} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualFontSizeMeta', Number(e.target.value))} />
+                <Separator />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="individual-font-size-main">Main Font Size</Label>
+                    <Input id="individual-font-size-main" type="number" value={selectedImage.individualFontSizeMain} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualFontSizeMain', Number(e.target.value))} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="individual-font-size-meta">Meta Font Size</Label>
+                    <Input id="individual-font-size-meta" type="number" value={selectedImage.individualFontSizeMeta} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualFontSizeMeta', Number(e.target.value))} />
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="individual-jpeg-quality">JPEG Quality (0.1-1.0)</Label>
                   <Input id="individual-jpeg-quality" type="number" step="0.1" min="0.1" max="1.0" value={selectedImage.individualJpegQuality} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualJpegQuality', Number(e.target.value))} />
                 </div>
+                <Separator />
+                <Button variant="outline" size="sm" onClick={() => {
+                  if (selectedImage) {
+                    onIndividualSettingChange(selectedImage.file.name, 'individualAspect', globalSettings.aspect);
+                    onIndividualSettingChange(selectedImage.file.name, 'individualAlign', globalSettings.align);
+                    onIndividualSettingChange(selectedImage.file.name, 'individualPaddingTop', globalSettings.paddingTop);
+                    onIndividualSettingChange(selectedImage.file.name, 'individualPaddingBottom', globalSettings.paddingBottom);
+                    onIndividualSettingChange(selectedImage.file.name, 'individualPaddingLeft', globalSettings.paddingLeft);
+                    onIndividualSettingChange(selectedImage.file.name, 'individualPaddingRight', globalSettings.paddingRight);
+                    onIndividualSettingChange(selectedImage.file.name, 'individualPaddingTopText', globalSettings.paddingTopText);
+                    onIndividualSettingChange(selectedImage.file.name, 'individualPaddingBetweenTextLines', globalSettings.paddingBetweenTextLines);
+                    onIndividualSettingChange(selectedImage.file.name, 'individualPaddingBetweenMetaData', globalSettings.paddingBetweenMetaData);
+                    onIndividualSettingChange(selectedImage.file.name, 'individualFontSizeMain', globalSettings.fontSizeMain);
+                    onIndividualSettingChange(selectedImage.file.name, 'individualFontSizeMeta', globalSettings.fontSizeMeta);
+                    onIndividualSettingChange(selectedImage.file.name, 'individualJpegQuality', globalSettings.jpegQuality);
+                  }
+                }}>
+                  Copy from Global
+                </Button>
               </>
             ) : (
               <p className="text-center text-slate-500">Select an image to view/edit its settings.</p>
@@ -218,41 +206,12 @@ export default function IndividualSettingsPanel({
               <div className="aspect-square bg-slate-100 rounded-lg flex items-center justify-center">
                 <div className="text-center text-slate-500">
                   <ImageIcon className="h-12 w-12 mx-auto mb-2" />
-                  <p className="text-sm">Select an image to see preview</p>
+                  <p className="text-sm">Select an image to see its preview</p>
                 </div>
               </div>
             )}
           </CardContent>
         </Card>
-      </div>
-
-      <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
-        <div className="flex items-center gap-2">
-          <ImageIcon className="h-5 w-5 text-blue-600" />
-          <span className="font-medium text-blue-800">
-            Individual settings override global settings
-          </span>
-        </div>
-        {selectedImage && (
-          <Button variant="outline" size="sm" onClick={() => {
-            if (selectedImage) {
-              onIndividualSettingChange(selectedImage.file.name, 'individualAspect', globalSettings.aspect);
-              onIndividualSettingChange(selectedImage.file.name, 'individualAlign', globalSettings.align);
-              onIndividualSettingChange(selectedImage.file.name, 'individualPaddingTop', globalSettings.paddingTop);
-              onIndividualSettingChange(selectedImage.file.name, 'individualPaddingBottom', globalSettings.paddingBottom);
-              onIndividualSettingChange(selectedImage.file.name, 'individualPaddingLeft', globalSettings.paddingLeft);
-              onIndividualSettingChange(selectedImage.file.name, 'individualPaddingRight', globalSettings.paddingRight);
-              onIndividualSettingChange(selectedImage.file.name, 'individualPaddingTopText', globalSettings.paddingTopText);
-              onIndividualSettingChange(selectedImage.file.name, 'individualPaddingBetweenTextLines', globalSettings.paddingBetweenTextLines);
-              onIndividualSettingChange(selectedImage.file.name, 'individualPaddingBetweenMetaData', globalSettings.paddingBetweenMetaData);
-              onIndividualSettingChange(selectedImage.file.name, 'individualFontSizeMain', globalSettings.fontSizeMain);
-              onIndividualSettingChange(selectedImage.file.name, 'individualFontSizeMeta', globalSettings.fontSizeMeta);
-              onIndividualSettingChange(selectedImage.file.name, 'individualJpegQuality', globalSettings.jpegQuality);
-            }
-          }}>
-            Copy from Global
-          </Button>
-        )}
       </div>
     </div>
   );
