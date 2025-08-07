@@ -7,7 +7,7 @@ import Link from "next/link";
 export default function Home() {
   return (
     <main className="flex flex-col min-h-[100dvh]">
-      <div className="min-h-[calc(100vh-var(--navbar-height))] flex flex-col md:flex-row bg-gradient-to-br from-slate-50 to-slate-10">
+      <div className="min-h-[calc(100vh-var(--navbar-height))] flex flex-col-reverse md:flex-row bg-gradient-to-br from-slate-50 to-slate-10">
 
         {/* Left Section (Text Content) */}
         <div className="flex flex-col space-y-6 w-full md:w-1/2 justify-center py-12 px-6 md:px-16 lg:px-24 xl:px-32 text-center md:text-left">
@@ -31,7 +31,7 @@ export default function Home() {
 
         {/* Right Section (Image) */}
         <div className="w-full md:w-1/2 flex justify-center items-center p-4 mt-8 md:mt-0">
-          <div className="shadow-lg w-full max-w-xs sm:max-w-sm md:max-w-md flex">
+          <div className="shadow-lg w-full max-w-xs sm:max-w-sm md:max-w-md flex md:scale-150">
             <Image
               src="/images/preview-2.png"
               width={1866}
