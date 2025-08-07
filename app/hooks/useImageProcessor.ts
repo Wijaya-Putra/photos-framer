@@ -1,7 +1,7 @@
 // app/hooks/useImageProcessor.ts
 'use client'
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { extractMetadata } from '../lib/metadata';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
@@ -10,6 +10,7 @@ import { ImageData } from '../types';
 export function useImageProcessor() {
   const [images, setImages] = useState<ImageData[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [filesUploaded, setFilesUploaded] = useState(false);
 
   const [globalAspect, setGlobalAspect] = useState('1:1');
   const [globalAlign, setGlobalAlign] = useState<'center' | 'left' | 'right'>('center');
@@ -24,9 +25,7 @@ export function useImageProcessor() {
   const [globalFontSizeMeta, setGlobalFontSizeMeta] = useState(26);
   const [globalJpegQuality, setGlobalJpegQuality] = useState(0.9);
   
-  // Changed the default mode to 'individual'
   const [activeMode, setActiveMode] = useState<'global' | 'individual'>('individual');
-  
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const canvasRefs = useRef<Record<string, HTMLCanvasElement | null>>({});
 
@@ -37,9 +36,22 @@ export function useImageProcessor() {
   const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
+  
+  const clearImages = () => {
+    setImages([]);
+    setSelectedImageId(null);
+    setFilesUploaded(false);
+    setActiveMode('individual');
+    if(fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    setFilesUploaded(true);
 
     const processed = await Promise.all(
       files.map(async (file) => {
@@ -73,20 +85,19 @@ export function useImageProcessor() {
     canvasRefs.current = {};
     if (processed.length > 0) {
       setSelectedImageId(processed[0].file.name);
+    }
+    
+    if (files.length > 1) {
+      setActiveMode('global');
     } else {
-      setSelectedImageId(null);
+      setActiveMode('individual');
     }
   };
 
-  const downloadAllToZip = async () => {
-    if (images.length === 0) {
-      alert('No images to download.');
-      return;
-    }
-
+  const downloadAllToZip = useCallback(async () => {
+    if (images.length === 0) return;
     const zip = new JSZip();
     let processedCount = 0;
-
     for (const imgData of images) {
       const canvas = canvasRefs.current[imgData.file.name];
       if (canvas) {
@@ -99,16 +110,12 @@ export function useImageProcessor() {
         }
       }
     }
-
     if (processedCount > 0) {
       zip.generateAsync({ type: 'blob' }).then((content) => {
         saveAs(content, 'framed_images.zip');
-        alert(`Successfully downloaded ${processedCount} images.`);
       });
-    } else {
-      alert('No images were successfully processed for download.');
     }
-  };
+  }, [images]); // Added images dependency
 
   const handleIndividualSettingChange = useCallback((
     imageId: string,
@@ -121,7 +128,7 @@ export function useImageProcessor() {
       }
       return img;
     }));
-  }, []);
+  }, []); // This is correct with the functional update
 
   const globalSettings = {
     aspect: globalAspect, setAspect: setGlobalAspect,
@@ -141,6 +148,7 @@ export function useImageProcessor() {
   return {
     images,
     fileInputRef,
+    filesUploaded,
     activeMode,
     setActiveMode,
     selectedImageId,
@@ -151,5 +159,6 @@ export function useImageProcessor() {
     downloadAllToZip,
     handleIndividualSettingChange,
     setCanvasRef,
+    clearImages,
   };
 }

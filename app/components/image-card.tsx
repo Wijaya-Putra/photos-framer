@@ -1,8 +1,8 @@
 // app/components/image-card.tsx
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import { ImageData } from '../types'; // Corrected Path
+import { useEffect, useRef } from 'react'
+import { ImageData } from '../types';
 
 interface Props {
   image: ImageData;
@@ -13,8 +13,6 @@ interface Props {
   globalPaddingBottom: number;
   globalPaddingLeft: number;
   globalPaddingRight: number;
-  // (The rest of the file is unchanged)
-  // ...
   globalPaddingTopText: number;
   globalPaddingBetweenTextLines: number;
   globalPaddingBetweenMetaData: number;
@@ -24,9 +22,12 @@ interface Props {
   setCanvasRef?: (key: string, node: HTMLCanvasElement | null) => void;
 }
 
+// Your Figma design's reference width. All px values are relative to this.
 const FIGMA_REFERENCE_IMAGE_WIDTH = 1866;
-const MIN_FONT_SIZE = 10;
-const MIN_PADDING = 10;
+
+// The target width for the high-resolution output canvas.
+// This ensures sharp text regardless of the original image size.
+const TARGET_CANVAS_WIDTH = 3000;
 
 export default function ImageCard({
   image,
@@ -46,21 +47,21 @@ export default function ImageCard({
   setCanvasRef,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [ready, setReady] = useState(false)
 
-  const baseAspect = settingMode === 'global' ? globalAspect : image.individualAspect;
-  const baseAlign = settingMode === 'global' ? globalAlign : image.individualAlign;
-  const basePaddingTop = settingMode === 'global' ? globalPaddingTop : image.individualPaddingTop;
-  const basePaddingBottom = settingMode === 'global' ? globalPaddingBottom : image.individualPaddingBottom;
-  const basePaddingLeft = settingMode === 'global' ? globalPaddingLeft : image.individualPaddingLeft;
-  const basePaddingRight = settingMode === 'global' ? globalPaddingRight : image.individualPaddingRight;
-  const basePaddingTopText = settingMode === 'global' ? globalPaddingTopText : image.individualPaddingTopText;
-  const basePaddingBetweenTextLines = settingMode === 'global' ? globalPaddingBetweenTextLines : image.individualPaddingBetweenTextLines;
-  const basePaddingBetweenMetaData = settingMode === 'global' ? globalPaddingBetweenMetaData : image.individualPaddingBetweenMetaData;
-  const baseFontSizeMain = settingMode === 'global' ? globalFontSizeMain : image.individualFontSizeMain;
-  const baseFontSizeMeta = settingMode === 'global' ? globalFontSizeMeta : image.individualFontSizeMeta;
-  const baseJpegQuality = settingMode === 'global' ? globalJpegQuality : image.individualJpegQuality;
-
+  // Consolidate settings based on the current mode
+  const settings = {
+    aspect: settingMode === 'global' ? globalAspect : image.individualAspect,
+    align: settingMode === 'global' ? globalAlign : image.individualAlign,
+    paddingTop: settingMode === 'global' ? globalPaddingTop : image.individualPaddingTop,
+    paddingBottom: settingMode === 'global' ? globalPaddingBottom : image.individualPaddingBottom,
+    paddingLeft: settingMode === 'global' ? globalPaddingLeft : image.individualPaddingLeft,
+    paddingRight: settingMode === 'global' ? globalPaddingRight : image.individualPaddingRight,
+    paddingTopText: settingMode === 'global' ? globalPaddingTopText : image.individualPaddingTopText,
+    paddingBetweenTextLines: settingMode === 'global' ? globalPaddingBetweenTextLines : image.individualPaddingBetweenTextLines,
+    paddingBetweenMetaData: settingMode === 'global' ? globalPaddingBetweenMetaData : image.individualPaddingBetweenMetaData,
+    fontSizeMain: settingMode === 'global' ? globalFontSizeMain : image.individualFontSizeMain,
+    fontSizeMeta: settingMode === 'global' ? globalFontSizeMeta : image.individualFontSizeMeta,
+  };
 
   useEffect(() => {
     if (setCanvasRef) {
@@ -74,155 +75,122 @@ export default function ImageCard({
   }, [image.file.name, setCanvasRef]);
 
   useEffect(() => {
-    const img = new Image()
-    img.src = image.url
+    const img = new Image();
+    img.src = image.url;
     img.onload = () => {
-      const canvas = canvasRef.current
-      if (!canvas) return
+      const canvas = canvasRef.current;
+      const ctx = canvas?.getContext('2d');
+      if (!canvas || !ctx) return;
 
-      const ctx = canvas.getContext('2d')
-      if (!ctx) return
+      // --- 1. Calculate Cropped Image Dimensions ---
+      const { naturalWidth: imgW, naturalHeight: imgH } = img;
+      let cropW = imgW;
+      let cropH = imgH;
 
-      const scale = window.devicePixelRatio || 1
-
-      const imgNaturalWidth = img.naturalWidth;
-      const imgNaturalHeight = img.naturalHeight;
-      let cropW = imgNaturalWidth;
-      let cropH = imgNaturalHeight;
-
-      if (baseAspect === '1:1') {
-        const size = Math.min(imgNaturalWidth, imgNaturalHeight);
-        cropW = size;
-        cropH = size;
-      } else if (baseAspect && baseAspect.includes(':')) {
-        const [w, h] = baseAspect.split(':').map(Number);
+      if (settings.aspect && settings.aspect.includes(':')) {
+        const [w, h] = settings.aspect.split(':').map(Number);
         const targetRatio = w / h;
-        if (imgNaturalWidth / imgNaturalHeight > targetRatio) {
-          cropW = imgNaturalHeight * targetRatio;
-          cropH = imgNaturalHeight;
+        if (imgW / imgH > targetRatio) {
+          cropW = imgH * targetRatio;
+          cropH = imgH;
         } else {
-          cropW = imgNaturalWidth;
-          cropH = imgNaturalWidth / targetRatio;
+          cropW = imgW;
+          cropH = imgW / targetRatio;
         }
       }
-
       cropW = Math.floor(cropW);
       cropH = Math.floor(cropH);
 
-      const scaledPaddingTop = Math.max(MIN_PADDING, (basePaddingTop / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
-      const scaledPaddingBottom = Math.max(MIN_PADDING, (basePaddingBottom / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
-      const scaledPaddingLeft = Math.max(MIN_PADDING, (basePaddingLeft / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
-      const scaledPaddingRight = Math.max(MIN_PADDING, (basePaddingRight / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
-      const scaledPaddingTopText = Math.max(MIN_PADDING, (basePaddingTopText / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
-      const scaledPaddingBetweenTextLines = Math.max(MIN_PADDING, (basePaddingBetweenTextLines / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
-      const scaledPaddingBetweenMetaData = Math.max(MIN_PADDING, (basePaddingBetweenMetaData / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
-      const scaledFontSizeMain = Math.max(MIN_FONT_SIZE, (baseFontSizeMain / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
-      const scaledFontSizeMeta = Math.max(MIN_FONT_SIZE, (baseFontSizeMeta / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
-      const totalTextHeight = scaledPaddingTopText + scaledFontSizeMain + scaledPaddingBetweenTextLines + scaledFontSizeMeta;
-      const canvasInternalW = cropW + scaledPaddingLeft + scaledPaddingRight;
-      const canvasInternalH = cropH + scaledPaddingTop + scaledPaddingBottom + totalTextHeight;
+      // --- 2. Calculate Proportional Sizes (based on Figma) ---
+      const figmaScale = cropW / FIGMA_REFERENCE_IMAGE_WIDTH;
+      const p = { // 'p' for proportions
+        top: settings.paddingTop * figmaScale,
+        bottom: settings.paddingBottom * figmaScale,
+        left: settings.paddingLeft * figmaScale,
+        right: settings.paddingRight * figmaScale,
+        topText: settings.paddingTopText * figmaScale,
+        betweenText: settings.paddingBetweenTextLines * figmaScale,
+        betweenMeta: settings.paddingBetweenMetaData * figmaScale,
+        fontMain: settings.fontSizeMain * figmaScale,
+        fontMeta: settings.fontSizeMeta * figmaScale,
+      };
 
-      canvas.width = Math.floor(canvasInternalW * scale);
-      canvas.height = Math.floor(canvasInternalH * scale);
+      // --- 3. Determine Canvas Layout and High-Res Scale ---
+      const totalTextHeight = p.topText + p.fontMain + p.betweenText + p.fontMeta;
+      const internalW = cropW + p.left + p.right;
+      const internalH = cropH + p.top + p.bottom + totalTextHeight;
+      const renderScale = TARGET_CANVAS_WIDTH / internalW;
 
-      ctx.scale(scale, scale);
+      canvas.width = internalW * renderScale;
+      canvas.height = internalH * renderScale;
+      
+      // Scale the context to draw in high resolution
+      ctx.scale(renderScale, renderScale);
+      
+      // --- 4. Draw Elements ---
       ctx.fillStyle = '#fff';
-      ctx.fillRect(0, 0, canvasInternalW, canvasInternalH);
+      ctx.fillRect(0, 0, internalW, internalH);
 
-      let sx = Math.floor((imgNaturalWidth - cropW) / 2);
-      let sy = Math.floor((imgNaturalHeight - cropH) / 2);
+      const sx = Math.floor((imgW - cropW) / 2);
+      const sy = Math.floor((imgH - cropH) / 2);
+      ctx.drawImage(img, sx, sy, cropW, cropH, p.left, p.top, cropW, cropH);
 
-      ctx.drawImage(
-        img,
-        sx,
-        sy,
-        cropW,
-        cropH,
-        scaledPaddingLeft,
-        scaledPaddingTop,
-        cropW,
-        cropH
-      );
+      // --- 5. Draw Text ---
+      ctx.fillStyle = '#000';
+      const textBlockYStart = p.top + cropH + p.topText;
+      const firstLineBaselineY = textBlockYStart + p.fontMain;
+      const secondLineBaselineY = firstLineBaselineY + p.betweenText + p.fontMeta;
 
-      const textBlockYStart = scaledPaddingTop + cropH + scaledPaddingTopText;
-      const firstLineBaselineY = textBlockYStart + scaledFontSizeMain;
-      const secondLineBaselineY = firstLineBaselineY + scaledPaddingBetweenTextLines + scaledFontSizeMeta;
-      let shotOnLineStartX: number;
-      let metaLineStartX: number;
       const shotOnPrefix = 'Shot on ';
       const makerModelText = `${image.make} ${image.model}`;
-      ctx.font = `${scaledFontSizeMain}px 'Open Sans', sans-serif`;
+      
+      ctx.font = `${p.fontMain}px 'Open Sans', sans-serif`;
       const shotOnPrefixWidth = ctx.measureText(shotOnPrefix).width;
-      ctx.font = `bold ${scaledFontSizeMain}px 'Open Sans', sans-serif`;
+      ctx.font = `bold ${p.fontMain}px 'Open Sans', sans-serif`;
       const makerModelWidth = ctx.measureText(makerModelText).width;
       const fullShotOnLineTextWidth = shotOnPrefixWidth + makerModelWidth;
-      ctx.font = `${scaledFontSizeMeta}px 'Open Sans', sans-serif`;
+
       const metadataItems = [
-        image.focalLength,
-        image.aperture,
-        image.shutter,
-        image.iso ? `ISO ${image.iso}` : ''
+        image.focalLength, image.aperture, image.shutter, image.iso ? `ISO ${image.iso}` : ''
       ].filter(Boolean);
-      let fullMetadataLineTextWidth = 0;
-      const gap = scaledPaddingBetweenMetaData;
-      metadataItems.forEach((item, index) => {
-        fullMetadataLineTextWidth += ctx.measureText(item).width;
-        if (index < metadataItems.length - 1) {
-          fullMetadataLineTextWidth += gap;
-        }
-      });
+      
+      ctx.font = `${p.fontMeta}px 'Open Sans', sans-serif`;
+      const metaWidths = metadataItems.map(item => ctx.measureText(item).width);
+      const totalMetaGapWidth = (metadataItems.length - 1) * p.betweenMeta;
+      const fullMetadataLineTextWidth = metaWidths.reduce((a, b) => a + b, 0) + totalMetaGapWidth;
 
-      if (baseAlign === 'left') {
-        shotOnLineStartX = scaledPaddingLeft;
-        metaLineStartX = scaledPaddingLeft;
-      } else if (baseAlign === 'center') {
-        shotOnLineStartX = canvasInternalW / 2 - fullShotOnLineTextWidth / 2;
-        metaLineStartX = canvasInternalW / 2 - fullMetadataLineTextWidth / 2;
-      } else if (baseAlign === 'right') {
-        shotOnLineStartX = canvasInternalW - scaledPaddingRight - fullShotOnLineTextWidth;
-        metaLineStartX = canvasInternalW - scaledPaddingRight - fullMetadataLineTextWidth;
-      } else {
-        shotOnLineStartX = canvasInternalW / 2 - fullShotOnLineTextWidth / 2;
-        metaLineStartX = canvasInternalW / 2 - fullMetadataLineTextWidth / 2;
+      let shotOnLineStartX, metaLineStartX;
+      if (settings.align === 'left') {
+        shotOnLineStartX = p.left;
+        metaLineStartX = p.left;
+      } else if (settings.align === 'right') {
+        shotOnLineStartX = internalW - p.right - fullShotOnLineTextWidth;
+        metaLineStartX = internalW - p.right - fullMetadataLineTextWidth;
+      } else { // Center
+        shotOnLineStartX = (internalW - fullShotOnLineTextWidth) / 2;
+        metaLineStartX = (internalW - fullMetadataLineTextWidth) / 2;
       }
-
+      
       ctx.textAlign = 'left';
-      ctx.fillStyle = '#000';
-      ctx.font = `${scaledFontSizeMain}px 'Open Sans', sans-serif`;
+      ctx.font = `${p.fontMain}px 'Open Sans', sans-serif`;
       ctx.fillText(shotOnPrefix, shotOnLineStartX, firstLineBaselineY);
-      ctx.font = `bold ${scaledFontSizeMain}px 'Open Sans', sans-serif`;
+      ctx.font = `bold ${p.fontMain}px 'Open Sans', sans-serif`;
       ctx.fillText(makerModelText, shotOnLineStartX + shotOnPrefixWidth, firstLineBaselineY);
-      ctx.font = `${scaledFontSizeMeta}px 'Open Sans', sans-serif`;
+
+      ctx.font = `${p.fontMeta}px 'Open Sans', sans-serif`;
       let currentX = metaLineStartX;
       metadataItems.forEach((item, index) => {
         ctx.fillText(item, currentX, secondLineBaselineY);
-        const itemWidth = ctx.measureText(item).width;
-        currentX += itemWidth;
-        if (index < metadataItems.length - 1) {
-          currentX += gap;
-        }
+        currentX += metaWidths[index] + p.betweenMeta;
       });
-      setReady(true)
     }
-  }, [
-    image,
-    baseAspect,
-    baseAlign,
-    basePaddingTop,
-    basePaddingBottom,
-    basePaddingLeft,
-    basePaddingRight,
-    basePaddingTopText,
-    basePaddingBetweenTextLines,
-    basePaddingBetweenMetaData,
-    baseFontSizeMain,
-    baseFontSizeMeta,
-    baseJpegQuality,
-  ])
+  }, [image, settings, globalJpegQuality]); // Rerun when image or any setting changes
 
   return (
-    <div className="p-4 border rounded-lg shadow-md">
-      <canvas ref={canvasRef} className="w-full max-w-full h-auto rounded shadow" />
+    // Removed shadow-md from this div
+    <div className="p-4 border rounded-lg bg-white">
+      {/* Removed rounded and shadow from the canvas */}
+      <canvas ref={canvasRef} className="w-full max-w-full h-auto" />
     </div>
   )
 }

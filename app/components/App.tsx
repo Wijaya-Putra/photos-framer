@@ -1,13 +1,15 @@
 // app/components/App.tsx
 'use client'
 
-import { useImageProcessor } from '@/app/hooks/useImageProcessor'; // Corrected Path
+import { useImageProcessor } from '@/app/hooks/useImageProcessor';
 import PhotoMetadataFramerUI from './PhotoMetadataFramerUI';
 
 export default function App() {
   const {
     images,
     fileInputRef,
+    filesUploaded,
+    clearImages,
     activeMode,
     setActiveMode,
     selectedImageId,
@@ -33,6 +35,8 @@ export default function App() {
       <PhotoMetadataFramerUI
         images={images}
         onUploadClick={handleUploadClick}
+        filesUploaded={filesUploaded}
+        clearImages={clearImages}
         onDownloadAll={downloadAllToZip}
         activeMode={activeMode}
         setActiveMode={setActiveMode}
