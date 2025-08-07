@@ -1,4 +1,4 @@
-// app/components/photo-metadata-framer.tsx (or PhotoMetadataFramerUI.tsx)
+// app/components/PhotoMetadataFramerUI.tsx
 'use client'
 
 // Import ImageData from App.tsx (or uploader.tsx if you didn't rename it)
@@ -37,7 +37,10 @@ interface PhotoMetadataFramerUIProps {
   globalSettings: {
     aspect: string; setAspect: (value: string) => void;
     align: 'center' | 'left' | 'right'; setAlign: (value: 'center' | 'left' | 'right') => void;
-    paddingAllSides: number; setPaddingAllSides: (value: number) => void;
+    paddingTop: number; setPaddingTop: (value: number) => void;
+    paddingBottom: number; setPaddingBottom: (value: number) => void;
+    paddingLeft: number; setPaddingLeft: (value: number) => void;
+    paddingRight: number; setPaddingRight: (value: number) => void;
     paddingTopText: number; setPaddingTopText: (value: number) => void;
     paddingBetweenTextLines: number; setPaddingBetweenTextLines: (value: number) => void;
     paddingBetweenMetaData: number; setPaddingBetweenMetaData: (value: number) => void;
@@ -168,7 +171,10 @@ export default function PhotoMetadataFramerUI({
               settingMode={activeMode === 'global' ? 'global' : 'perCard'} // Ensure 'perCard' for individual
               globalAspect={globalSettings.aspect}
               globalAlign={globalSettings.align}
-              globalPaddingAllSides={globalSettings.paddingAllSides}
+              globalPaddingTop={globalSettings.paddingTop}
+              globalPaddingBottom={globalSettings.paddingBottom}
+              globalPaddingLeft={globalSettings.paddingLeft}
+              globalPaddingRight={globalSettings.paddingRight}
               globalPaddingTopText={globalSettings.paddingTopText}
               globalPaddingBetweenTextLines={globalSettings.paddingBetweenTextLines}
               globalPaddingBetweenMetaData={globalSettings.paddingBetweenMetaData}
@@ -188,7 +194,10 @@ export default function PhotoMetadataFramerUI({
 function GlobalSettingsPanel({
   aspect, setAspect,
   align, setAlign,
-  paddingAllSides, setPaddingAllSides,
+  paddingTop, setPaddingTop,
+  paddingBottom, setPaddingBottom,
+  paddingLeft, setPaddingLeft,
+  paddingRight, setPaddingRight,
   paddingTopText, setPaddingTopText,
   paddingBetweenTextLines, setPaddingBetweenTextLines,
   paddingBetweenMetaData, setPaddingBetweenMetaData,
@@ -247,9 +256,23 @@ function GlobalSettingsPanel({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="canvas-padding">Canvas Padding</Label>
-              <Input id="canvas-padding" type="number" value={paddingAllSides} onChange={(e) => setPaddingAllSides(Number(e.target.value))} />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="canvas-padding-top">Padding Top</Label>
+                <Input id="canvas-padding-top" type="number" value={paddingTop} onChange={(e) => setPaddingTop(Number(e.target.value))} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="canvas-padding-bottom">Padding Bottom</Label>
+                <Input id="canvas-padding-bottom" type="number" value={paddingBottom} onChange={(e) => setPaddingBottom(Number(e.target.value))} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="canvas-padding-left">Padding Left</Label>
+                <Input id="canvas-padding-left" type="number" value={paddingLeft} onChange={(e) => setPaddingLeft(Number(e.target.value))} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="canvas-padding-right">Padding Right</Label>
+                <Input id="canvas-padding-right" type="number" value={paddingRight} onChange={(e) => setPaddingRight(Number(e.target.value))} />
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="image-gap">Gap Image to Text</Label>
@@ -302,7 +325,10 @@ function GlobalSettingsPanel({
           // Reset to defaults
           setAspect('1:1');
           setAlign('center');
-          setPaddingAllSides(46);
+          setPaddingTop(46);
+          setPaddingBottom(46);
+          setPaddingLeft(46);
+          setPaddingRight(46);
           setPaddingTopText(20);
           setPaddingBetweenTextLines(10);
           setPaddingBetweenMetaData(5);
@@ -420,9 +446,23 @@ function IndividualSettingsPanel({
                   </Select>
                 </div>
                 {/* Padding */}
-                <div className="space-y-2">
-                  <Label htmlFor="individual-padding-all-sides">Canvas Padding</Label>
-                  <Input id="individual-padding-all-sides" type="number" value={selectedImage.individualPaddingAllSides} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualPaddingAllSides', Number(e.target.value))} />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="individual-padding-top">Padding Top</Label>
+                    <Input id="individual-padding-top" type="number" value={selectedImage.individualPaddingTop} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualPaddingTop', Number(e.target.value))} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="individual-padding-bottom">Padding Bottom</Label>
+                    <Input id="individual-padding-bottom" type="number" value={selectedImage.individualPaddingBottom} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualPaddingBottom', Number(e.target.value))} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="individual-padding-left">Padding Left</Label>
+                    <Input id="individual-padding-left" type="number" value={selectedImage.individualPaddingLeft} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualPaddingLeft', Number(e.target.value))} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="individual-padding-right">Padding Right</Label>
+                    <Input id="individual-padding-right" type="number" value={selectedImage.individualPaddingRight} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualPaddingRight', Number(e.target.value))} />
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="individual-padding-top-text">Gap Image to Text</Label>
@@ -471,7 +511,10 @@ function IndividualSettingsPanel({
                   // Pass global settings, but they won't be used due to settingMode='perCard'
                   globalAspect={globalSettings.aspect}
                   globalAlign={globalSettings.align}
-                  globalPaddingAllSides={globalSettings.paddingAllSides}
+                  globalPaddingTop={globalSettings.paddingTop}
+                  globalPaddingBottom={globalSettings.paddingBottom}
+                  globalPaddingLeft={globalSettings.paddingLeft}
+                  globalPaddingRight={globalSettings.paddingRight}
                   globalPaddingTopText={globalSettings.paddingTopText}
                   globalPaddingBetweenTextLines={globalSettings.paddingBetweenTextLines}
                   globalPaddingBetweenMetaData={globalSettings.paddingBetweenMetaData}
@@ -517,7 +560,10 @@ function IndividualSettingsPanel({
             if (selectedImage) { // Ensure selectedImage is not null
               onIndividualSettingChange(selectedImage.file.name, 'individualAspect', globalSettings.aspect);
               onIndividualSettingChange(selectedImage.file.name, 'individualAlign', globalSettings.align);
-              onIndividualSettingChange(selectedImage.file.name, 'individualPaddingAllSides', globalSettings.paddingAllSides);
+              onIndividualSettingChange(selectedImage.file.name, 'individualPaddingTop', globalSettings.paddingTop);
+              onIndividualSettingChange(selectedImage.file.name, 'individualPaddingBottom', globalSettings.paddingBottom);
+              onIndividualSettingChange(selectedImage.file.name, 'individualPaddingLeft', globalSettings.paddingLeft);
+              onIndividualSettingChange(selectedImage.file.name, 'individualPaddingRight', globalSettings.paddingRight);
               onIndividualSettingChange(selectedImage.file.name, 'individualPaddingTopText', globalSettings.paddingTopText);
               onIndividualSettingChange(selectedImage.file.name, 'individualPaddingBetweenTextLines', globalSettings.paddingBetweenTextLines);
               onIndividualSettingChange(selectedImage.file.name, 'individualPaddingBetweenMetaData', globalSettings.paddingBetweenMetaData);

@@ -1,3 +1,4 @@
+// app/components/App.tsx
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
@@ -30,7 +31,10 @@ export interface ImageData {
   // New individual settings properties
   individualAspect: string;
   individualAlign: 'center' | 'left' | 'right';
-  individualPaddingAllSides: number;
+  individualPaddingTop: number;
+  individualPaddingBottom: number;
+  individualPaddingLeft: number;
+  individualPaddingRight: number;
   individualPaddingTopText: number;
   individualPaddingBetweenTextLines: number;
   individualPaddingBetweenMetaData: number;
@@ -46,7 +50,10 @@ export default function App() {
   // Global configuration states
   const [globalAspect, setGlobalAspect] = useState('1:1')
   const [globalAlign, setGlobalAlign] = useState<'center' | 'left' | 'right'>('center')
-  const [globalPaddingAllSides, setGlobalPaddingAllSides] = useState(46)
+  const [globalPaddingTop, setGlobalPaddingTop] = useState(46)
+  const [globalPaddingBottom, setGlobalPaddingBottom] = useState(46)
+  const [globalPaddingLeft, setGlobalPaddingLeft] = useState(46)
+  const [globalPaddingRight, setGlobalPaddingRight] = useState(46)
   const [globalPaddingTopText, setGlobalPaddingTopText] = useState(70)
   const [globalPaddingBetweenTextLines, setGlobalPaddingBetweenTextLines] = useState(12)
   const [globalPaddingBetweenMetaData, setGlobalPaddingBetweenMetaData] = useState(12)
@@ -91,7 +98,10 @@ export default function App() {
           // Initialize individual settings
           individualAspect: globalAspect,
           individualAlign: globalAlign,
-          individualPaddingAllSides: globalPaddingAllSides,
+          individualPaddingTop: globalPaddingTop,
+          individualPaddingBottom: globalPaddingBottom,
+          individualPaddingLeft: globalPaddingLeft,
+          individualPaddingRight: globalPaddingRight,
           individualPaddingTopText: globalPaddingTopText,
           individualPaddingBetweenTextLines: globalPaddingBetweenTextLines,
           individualPaddingBetweenMetaData: globalPaddingBetweenMetaData,
@@ -124,7 +134,7 @@ export default function App() {
       const canvas = canvasRefs.current[imgData.file.name];
       if (canvas) {
         const blob = await new Promise<Blob | null>((resolve) =>
-          canvas.toBlob(resolve, 'image/png', imgData.individualJpegQuality) // Use individual quality here
+          canvas.toBlob(resolve, 'image/jpeg', imgData.individualJpegQuality) // Use individual quality here
         );
         if (blob) {
           zip.file(`framed-${imgData.file.name}`, blob);
@@ -159,7 +169,10 @@ export default function App() {
   const globalSettings = {
     aspect: globalAspect, setAspect: setGlobalAspect,
     align: globalAlign, setAlign: setGlobalAlign,
-    paddingAllSides: globalPaddingAllSides, setPaddingAllSides: setGlobalPaddingAllSides,
+    paddingTop: globalPaddingTop, setPaddingTop: setGlobalPaddingTop,
+    paddingBottom: globalPaddingBottom, setPaddingBottom: setGlobalPaddingBottom,
+    paddingLeft: globalPaddingLeft, setPaddingLeft: setGlobalPaddingLeft,
+    paddingRight: globalPaddingRight, setPaddingRight: setGlobalPaddingRight,
     paddingTopText: globalPaddingTopText, setPaddingTopText: setGlobalPaddingTopText,
     paddingBetweenTextLines: globalPaddingBetweenTextLines, setPaddingBetweenTextLines: setGlobalPaddingBetweenTextLines,
     paddingBetweenMetaData: globalPaddingBetweenMetaData, setPaddingBetweenMetaData: setGlobalPaddingBetweenMetaData,

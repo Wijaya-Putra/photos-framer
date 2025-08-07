@@ -1,4 +1,4 @@
-// components/individual-settings-panel.tsx
+// app/components/individual-settings-panel.tsx
 'use client'
 
 import { useState } from "react"
@@ -22,7 +22,10 @@ interface IndividualSettingsPanelProps {
   globalSettings: { // Passed for "Copy from Global" functionality
     aspect: string;
     align: 'center' | 'left' | 'right';
-    paddingAllSides: number;
+    paddingTop: number;
+    paddingBottom: number;
+    paddingLeft: number;
+    paddingRight: number;
     paddingTopText: number;
     paddingBetweenTextLines: number;
     paddingBetweenMetaData: number;
@@ -49,8 +52,8 @@ export default function IndividualSettingsPanel({
       const canvas = document.querySelector(`canvas[data-image-id="${selectedImage.file.name}-individual-preview"]`) as HTMLCanvasElement;
       if (canvas) {
         const link = document.createElement('a');
-        link.download = `framed-${selectedImage.file.name.split('.')[0]}-individual.png`;
-        link.href = canvas.toDataURL('image/png', selectedImage.individualJpegQuality); // Use individual quality
+        link.download = `framed-${selectedImage.file.name.split('.')[0]}-individual.jpeg`;
+        link.href = canvas.toDataURL('image/jpeg', selectedImage.individualJpegQuality); // Use individual quality
         link.click();
       } else {
         alert('Preview canvas not found for download. Please ensure the image is loaded.');
@@ -134,9 +137,23 @@ export default function IndividualSettingsPanel({
                   </Select>
                 </div>
                 {/* Padding */}
-                <div className="space-y-2">
-                  <Label htmlFor="individual-padding-all-sides">Canvas Padding</Label>
-                  <Input id="individual-padding-all-sides" type="number" value={selectedImage.individualPaddingAllSides} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualPaddingAllSides', Number(e.target.value))} />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="individual-padding-top">Padding Top</Label>
+                    <Input id="individual-padding-top" type="number" value={selectedImage.individualPaddingTop} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualPaddingTop', Number(e.target.value))} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="individual-padding-bottom">Padding Bottom</Label>
+                    <Input id="individual-padding-bottom" type="number" value={selectedImage.individualPaddingBottom} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualPaddingBottom', Number(e.target.value))} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="individual-padding-left">Padding Left</Label>
+                    <Input id="individual-padding-left" type="number" value={selectedImage.individualPaddingLeft} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualPaddingLeft', Number(e.target.value))} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="individual-padding-right">Padding Right</Label>
+                    <Input id="individual-padding-right" type="number" value={selectedImage.individualPaddingRight} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualPaddingRight', Number(e.target.value))} />
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="individual-padding-top-text">Gap Image to Text</Label>
@@ -185,7 +202,10 @@ export default function IndividualSettingsPanel({
                   // Pass global settings, but they won't be used due to settingMode='perCard'
                   globalAspect={globalSettings.aspect}
                   globalAlign={globalSettings.align}
-                  globalPaddingAllSides={globalSettings.paddingAllSides}
+                  globalPaddingTop={globalSettings.paddingTop}
+                  globalPaddingBottom={globalSettings.paddingBottom}
+                  globalPaddingLeft={globalSettings.paddingLeft}
+                  globalPaddingRight={globalSettings.paddingRight}
                   globalPaddingTopText={globalSettings.paddingTopText}
                   globalPaddingBetweenTextLines={globalSettings.paddingBetweenTextLines}
                   globalPaddingBetweenMetaData={globalSettings.paddingBetweenMetaData}
@@ -232,7 +252,10 @@ export default function IndividualSettingsPanel({
             if (selectedImage) {
               onIndividualSettingChange(selectedImage.file.name, 'individualAspect', globalSettings.aspect);
               onIndividualSettingChange(selectedImage.file.name, 'individualAlign', globalSettings.align);
-              onIndividualSettingChange(selectedImage.file.name, 'individualPaddingAllSides', globalSettings.paddingAllSides);
+              onIndividualSettingChange(selectedImage.file.name, 'individualPaddingTop', globalSettings.paddingTop);
+              onIndividualSettingChange(selectedImage.file.name, 'individualPaddingBottom', globalSettings.paddingBottom);
+              onIndividualSettingChange(selectedImage.file.name, 'individualPaddingLeft', globalSettings.paddingLeft);
+              onIndividualSettingChange(selectedImage.file.name, 'individualPaddingRight', globalSettings.paddingRight);
               onIndividualSettingChange(selectedImage.file.name, 'individualPaddingTopText', globalSettings.paddingTopText);
               onIndividualSettingChange(selectedImage.file.name, 'individualPaddingBetweenTextLines', globalSettings.paddingBetweenTextLines);
               onIndividualSettingChange(selectedImage.file.name, 'individualPaddingBetweenMetaData', globalSettings.paddingBetweenMetaData);

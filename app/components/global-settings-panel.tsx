@@ -1,4 +1,4 @@
-// components/global-settings-panel.tsx
+// app/components/global-settings-panel.tsx
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,7 +12,10 @@ import { Globe, Layout, Sliders, Type } from "lucide-react"
 interface GlobalSettingsPanelProps {
   aspect: string; setAspect: (value: string) => void;
   align: 'center' | 'left' | 'right'; setAlign: (value: 'center' | 'left' | 'right') => void;
-  paddingAllSides: number; setPaddingAllSides: (value: number) => void;
+  paddingTop: number; setPaddingTop: (value: number) => void;
+  paddingBottom: number; setPaddingBottom: (value: number) => void;
+  paddingLeft: number; setPaddingLeft: (value: number) => void;
+  paddingRight: number; setPaddingRight: (value: number) => void;
   paddingTopText: number; setPaddingTopText: (value: number) => void;
   paddingBetweenTextLines: number; setPaddingBetweenTextLines: (value: number) => void;
   paddingBetweenMetaData: number; setPaddingBetweenMetaData: (value: number) => void;
@@ -24,7 +27,10 @@ interface GlobalSettingsPanelProps {
 export default function GlobalSettingsPanel({
   aspect, setAspect,
   align, setAlign,
-  paddingAllSides, setPaddingAllSides,
+  paddingTop, setPaddingTop,
+  paddingBottom, setPaddingBottom,
+  paddingLeft, setPaddingLeft,
+  paddingRight, setPaddingRight,
   paddingTopText, setPaddingTopText,
   paddingBetweenTextLines, setPaddingBetweenTextLines,
   paddingBetweenMetaData, setPaddingBetweenMetaData,
@@ -36,7 +42,10 @@ export default function GlobalSettingsPanel({
   const resetToDefaults = () => {
     setAspect('1:1');
     setAlign('center');
-    setPaddingAllSides(46);
+    setPaddingTop(46);
+    setPaddingBottom(46);
+    setPaddingLeft(46);
+    setPaddingRight(46);
     setPaddingTopText(70);
     setPaddingBetweenTextLines(12);
     setPaddingBetweenMetaData(12);
@@ -97,9 +106,23 @@ export default function GlobalSettingsPanel({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="canvas-padding">Canvas Padding</Label>
-              <Input id="canvas-padding" type="number" value={paddingAllSides} onChange={(e) => setPaddingAllSides(Number(e.target.value))} />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="canvas-padding-top">Padding Top</Label>
+                <Input id="canvas-padding-top" type="number" value={paddingTop} onChange={(e) => setPaddingTop(Number(e.target.value))} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="canvas-padding-bottom">Padding Bottom</Label>
+                <Input id="canvas-padding-bottom" type="number" value={paddingBottom} onChange={(e) => setPaddingBottom(Number(e.target.value))} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="canvas-padding-left">Padding Left</Label>
+                <Input id="canvas-padding-left" type="number" value={paddingLeft} onChange={(e) => setPaddingLeft(Number(e.target.value))} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="canvas-padding-right">Padding Right</Label>
+                <Input id="canvas-padding-right" type="number" value={paddingRight} onChange={(e) => setPaddingRight(Number(e.target.value))} />
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="image-gap">Gap Image to Text</Label>

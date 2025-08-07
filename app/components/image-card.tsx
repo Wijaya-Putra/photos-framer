@@ -9,7 +9,10 @@ interface Props {
   settingMode: 'global' | 'perCard';
   globalAspect: string;
   globalAlign: 'center' | 'left' | 'right';
-  globalPaddingAllSides: number;
+  globalPaddingTop: number;
+  globalPaddingBottom: number;
+  globalPaddingLeft: number;
+  globalPaddingRight: number;
   globalPaddingTopText: number;
   globalPaddingBetweenTextLines: number;
   globalPaddingBetweenMetaData: number;
@@ -28,7 +31,10 @@ export default function ImageCard({
   settingMode,
   globalAspect,
   globalAlign,
-  globalPaddingAllSides,
+  globalPaddingTop,
+  globalPaddingBottom,
+  globalPaddingLeft,
+  globalPaddingRight,
   globalPaddingTopText,
   globalPaddingBetweenTextLines,
   globalPaddingBetweenMetaData,
@@ -42,7 +48,10 @@ export default function ImageCard({
 
   const baseAspect = settingMode === 'global' ? globalAspect : image.individualAspect;
   const baseAlign = settingMode === 'global' ? globalAlign : image.individualAlign;
-  const basePaddingAllSides = settingMode === 'global' ? globalPaddingAllSides : image.individualPaddingAllSides;
+  const basePaddingTop = settingMode === 'global' ? globalPaddingTop : image.individualPaddingTop;
+  const basePaddingBottom = settingMode === 'global' ? globalPaddingBottom : image.individualPaddingBottom;
+  const basePaddingLeft = settingMode === 'global' ? globalPaddingLeft : image.individualPaddingLeft;
+  const basePaddingRight = settingMode === 'global' ? globalPaddingRight : image.individualPaddingRight;
   const basePaddingTopText = settingMode === 'global' ? globalPaddingTopText : image.individualPaddingTopText;
   const basePaddingBetweenTextLines = settingMode === 'global' ? globalPaddingBetweenTextLines : image.individualPaddingBetweenTextLines;
   const basePaddingBetweenMetaData = settingMode === 'global' ? globalPaddingBetweenMetaData : image.individualPaddingBetweenMetaData;
@@ -107,7 +116,11 @@ export default function ImageCard({
       console.log(`[ImageCard - ${image.file.name}] Final Cropped Image Dims (for drawImage source/dest): ${cropW}x${cropH}`);
 
 
-      const scaledPadding = Math.max(MIN_PADDING, (basePaddingAllSides / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
+      const scaledPaddingTop = Math.max(MIN_PADDING, (basePaddingTop / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
+      const scaledPaddingBottom = Math.max(MIN_PADDING, (basePaddingBottom / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
+      const scaledPaddingLeft = Math.max(MIN_PADDING, (basePaddingLeft / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
+      const scaledPaddingRight = Math.max(MIN_PADDING, (basePaddingRight / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
+
       const scaledPaddingTopText = Math.max(MIN_PADDING, (basePaddingTopText / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
       const scaledPaddingBetweenTextLines = Math.max(MIN_PADDING, (basePaddingBetweenTextLines / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
       const scaledPaddingBetweenMetaData = Math.max(MIN_PADDING, (basePaddingBetweenMetaData / FIGMA_REFERENCE_IMAGE_WIDTH) * cropW);
@@ -120,8 +133,8 @@ export default function ImageCard({
                               scaledPaddingBetweenTextLines +
                               scaledFontSizeMeta;
 
-      const canvasInternalW = cropW + scaledPadding * 2;
-      const canvasInternalH = cropH + scaledPadding * 2 + totalTextHeight;
+      const canvasInternalW = cropW + scaledPaddingLeft + scaledPaddingRight;
+      const canvasInternalH = cropH + scaledPaddingTop + scaledPaddingBottom + totalTextHeight;
 
       canvas.width = Math.floor(canvasInternalW * scale); // Device pixels
       canvas.height = Math.floor(canvasInternalH * scale); // Device pixels
@@ -140,17 +153,17 @@ export default function ImageCard({
         sy,
         cropW,
         cropH,
-        scaledPadding,
-        scaledPadding,
+        scaledPaddingLeft,
+        scaledPaddingTop,
         cropW,
         cropH
       );
-      console.log(`[ImageCard - ${image.file.name}] drawImage parameters: sx=${sx}, sy=${sy}, sWidth=${cropW}, sHeight=${cropH}, dX=${scaledPadding}, dY=${scaledPadding}, dWidth=${cropW}, dHeight=${cropH}`);
+      console.log(`[ImageCard - ${image.file.name}] drawImage parameters: sx=${sx}, sy=${sy}, sWidth=${cropW}, sHeight=${cropH}, dX=${scaledPaddingLeft}, dY=${scaledPaddingTop}, dWidth=${cropW}, dHeight=${cropH}`);
       console.log(`[ImageCard - ${image.file.name}] Canvas Internal Drawing Dims (CSS px before device scaling): ${canvasInternalW}x${canvasInternalH}`);
       console.log(`[ImageCard - ${image.file.name}] Canvas Element Internal Resolution (device px): ${canvas.width}x${canvas.height}`);
 
 
-      const textBlockYStart = scaledPadding + cropH + scaledPaddingTopText;
+      const textBlockYStart = scaledPaddingTop + cropH + scaledPaddingTopText;
       const firstLineBaselineY = textBlockYStart + scaledFontSizeMain;
       const secondLineBaselineY = firstLineBaselineY + scaledPaddingBetweenTextLines + scaledFontSizeMeta;
 
@@ -187,14 +200,14 @@ export default function ImageCard({
 
 
       if (baseAlign === 'left') {
-        shotOnLineStartX = scaledPadding;
-        metaLineStartX = scaledPadding;
+        shotOnLineStartX = scaledPaddingLeft;
+        metaLineStartX = scaledPaddingLeft;
       } else if (baseAlign === 'center') {
         shotOnLineStartX = canvasInternalW / 2 - fullShotOnLineTextWidth / 2;
         metaLineStartX = canvasInternalW / 2 - fullMetadataLineTextWidth / 2;
       } else if (baseAlign === 'right') {
-        shotOnLineStartX = canvasInternalW - scaledPadding - fullShotOnLineTextWidth;
-        metaLineStartX = canvasInternalW - scaledPadding - fullMetadataLineTextWidth;
+        shotOnLineStartX = canvasInternalW - scaledPaddingRight - fullShotOnLineTextWidth;
+        metaLineStartX = canvasInternalW - scaledPaddingRight - fullMetadataLineTextWidth;
       } else {
         shotOnLineStartX = canvasInternalW / 2 - fullShotOnLineTextWidth / 2;
         metaLineStartX = canvasInternalW / 2 - fullMetadataLineTextWidth / 2;
@@ -227,7 +240,10 @@ export default function ImageCard({
     image,
     baseAspect,
     baseAlign,
-    basePaddingAllSides,
+    basePaddingTop,
+    basePaddingBottom,
+    basePaddingLeft,
+    basePaddingRight,
     basePaddingTopText,
     basePaddingBetweenTextLines,
     basePaddingBetweenMetaData,
