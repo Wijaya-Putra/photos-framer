@@ -1,5 +1,5 @@
 // app/framer/layout.tsx
-import { Navbar } from "../components/navbar";
+import { Navbar } from "../components/Navbar";
 import { Open_Sans } from "next/font/google";
 
 const openSans = Open_Sans({
