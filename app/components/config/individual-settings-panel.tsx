@@ -55,7 +55,7 @@ export default function IndividualSettingsPanel({
       onIndividualSettingChange(selectedImage.file.name, 'individualPaddingBottom', 46);
       onIndividualSettingChange(selectedImage.file.name, 'individualPaddingLeft', 46);
       onIndividualSettingChange(selectedImage.file.name, 'individualPaddingRight', 46);
-      onIndividualSettingChange(selectedImage.file.name, 'individualPaddingTopText', 70);
+      onIndividualSettingChange(selectedImage.file.name, 'individualPaddingTopText', 71);
       onIndividualSettingChange(selectedImage.file.name, 'individualPaddingBetweenTextLines', 12);
       onIndividualSettingChange(selectedImage.file.name, 'individualPaddingBetweenMetaData', 12);
       onIndividualSettingChange(selectedImage.file.name, 'individualFontSizeMain', 36);

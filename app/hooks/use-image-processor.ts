@@ -18,7 +18,7 @@ export function useImageProcessor() {
   const [globalPaddingBottom, setGlobalPaddingBottom] = useState(46);
   const [globalPaddingLeft, setGlobalPaddingLeft] = useState(46);
   const [globalPaddingRight, setGlobalPaddingRight] = useState(46);
-  const [globalPaddingTopText, setGlobalPaddingTopText] = useState(70);
+  const [globalPaddingTopText, setGlobalPaddingTopText] = useState(71);
   const [globalPaddingBetweenTextLines, setGlobalPaddingBetweenTextLines] = useState(12);
   const [globalPaddingBetweenMetaData, setGlobalPaddingBetweenMetaData] = useState(12);
   const [globalFontSizeMain, setGlobalFontSizeMain] = useState(36);

@@ -45,7 +45,7 @@ export default function GlobalSettingsPanel({
     setPaddingBottom(46);
     setPaddingLeft(46);
     setPaddingRight(46);
-    setPaddingTopText(70);
+    setPaddingTopText(71);
     setPaddingBetweenTextLines(12);
     setPaddingBetweenMetaData(12);
     setFontSizeMain(36);

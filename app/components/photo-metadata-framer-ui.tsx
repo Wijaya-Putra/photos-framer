@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import GlobalSettingsPanel from './config/global-settings-panel';
 import IndividualSettingsPanel from './config/individual-settings-panel';
-import FileUploadSummary from './FileUploadSummary';
+import FileUploadSummary from './file-upload-summary';
 import ImageCard from './image-card';
 
 interface PhotoMetadataFramerUIProps {
