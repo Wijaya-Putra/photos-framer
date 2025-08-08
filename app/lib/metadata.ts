@@ -12,6 +12,7 @@ export async function extractMetadata(file: File) {
       aperture: exif?.FNumber ? `f/${exif.FNumber}` : '',
       shutter: exif?.ExposureTime ? `1/${Math.round(1 / exif.ExposureTime)}` : '',
       iso: exif?.ISO?.toString() || '',
+      dateTimeOriginal: exif?.DateTimeOriginal,
     }
   } catch (error) {
     console.error('Error extracting metadata:', error)
@@ -22,6 +23,7 @@ export async function extractMetadata(file: File) {
       aperture: '',
       shutter: '',
       iso: '',
+      dateTimeOriginal: undefined,
     }
   }
 }

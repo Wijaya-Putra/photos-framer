@@ -18,8 +18,8 @@ interface Props {
   globalFontSizeMain: number;
   globalFontSizeMeta: number;
   globalJpegQuality: number;
+  globalLocation: string;
   setCanvasRef?: (key: string, node: HTMLCanvasElement | null) => void;
-  // This is now a required prop
   TemplateComponent: React.ComponentType<any>;
 }
 
@@ -38,8 +38,9 @@ export default function ImageCard({
   globalFontSizeMain,
   globalFontSizeMeta,
   globalJpegQuality,
+  globalLocation,
   setCanvasRef,
-  TemplateComponent, // Removed the default value
+  TemplateComponent,
 }: Props) {
   return (
     <TemplateComponent
@@ -57,6 +58,7 @@ export default function ImageCard({
       globalFontSizeMain={globalFontSizeMain}
       globalFontSizeMeta={globalFontSizeMeta}
       globalJpegQuality={globalJpegQuality}
+      globalLocation={globalLocation}
       setCanvasRef={setCanvasRef}
     />
   );

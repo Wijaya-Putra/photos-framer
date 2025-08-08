@@ -7,7 +7,7 @@ import { Input } from "../ui/input"
 import { Button } from "../ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { Separator } from "../ui/separator"
-import { Download, ImageIcon, Palette, RotateCcw } from "lucide-react"
+import { Download, ImageIcon, Palette, RotateCcw, MapPin } from "lucide-react"
 import ImageCard from "../image-card"
 import { ImageData, TemplateName } from "@/app/types"
 
@@ -16,7 +16,7 @@ interface IndividualSettingsPanelProps {
   selectedImageId: string | null;
   setSelectedImageId: (id: string | null) => void;
   setCanvasRef: (key: string, node: HTMLCanvasElement | null) => void;
-  onIndividualSettingChange: (imageId: string, settingName: keyof Omit<ImageData, 'file' | 'url' | 'make' | 'model' | 'focalLength' | 'aperture' | 'shutter' | 'iso'>, newValue: any) => void;
+  onIndividualSettingChange: (imageId: string, settingName: keyof Omit<ImageData, 'file' | 'url' | 'make' | 'model' | 'focalLength' | 'aperture' | 'shutter' | 'iso' | 'dateTimeOriginal' | 'dominantColors'>, newValue: any) => void;
   globalSettings: any;
   TemplateComponent: React.ComponentType<any>;
   selectedTemplate: TemplateName;
@@ -67,6 +67,7 @@ export default function IndividualSettingsPanel({
       onIndividualSettingChange(selectedImage.file.name, 'individualFontSizeMain', 36);
       onIndividualSettingChange(selectedImage.file.name, 'individualFontSizeMeta', 26);
       onIndividualSettingChange(selectedImage.file.name, 'individualJpegQuality', 0.9);
+      onIndividualSettingChange(selectedImage.file.name, 'individualLocation', 'Tokyo, Japan');
     }
   };
 
@@ -89,29 +90,6 @@ export default function IndividualSettingsPanel({
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="individual-aspect-ratio">Aspect Ratio</Label>
-                        <Select value={selectedImage.individualAspect} onValueChange={(value) => onIndividualSettingChange(selectedImage.file.name, 'individualAspect', value)}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="1:1">1:1 (Square)</SelectItem>
-                                <SelectItem value="4:3">4:3 (Standard)</SelectItem>
-                                <SelectItem value="16:9">16:9 (Widescreen)</SelectItem>
-                                <SelectItem value="3:2">3:2 (Classic)</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="individual-text-align">Text Alignment</Label>
-                        <Select value={selectedImage.individualAlign} onValueChange={(value) => onIndividualSettingChange(selectedImage.file.name, 'individualAlign', value as 'center' | 'left' | 'right')}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="left">Left</SelectItem>
-                                <SelectItem value="center">Center</SelectItem>
-                                <SelectItem value="right">Right</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
                     <div className="space-y-2 md:col-span-2">
                         <Label htmlFor="template-select">Template</Label>
                         <Select value={selectedTemplate} onValueChange={(value) => setSelectedTemplate(value as TemplateName)}>
@@ -129,64 +107,116 @@ export default function IndividualSettingsPanel({
                                         <Palette className="h-4 w-4" /> Minimalist Gray
                                     </div>
                                 </SelectItem>
+                                <SelectItem value="memoir">
+                                    <div className="flex items-center gap-2">
+                                        <Palette className="h-4 w-4" /> Memoir Vertical
+                                    </div>
+                                </SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
+
+                    {selectedTemplate === 'memoir' && (
+                      <div className="space-y-2 md:col-span-2">
+                        <Label htmlFor="individual-location">Location</Label>
+                        <div className='flex items-center gap-2'>
+                          <MapPin className="h-4 w-4 text-slate-500" />
+                          <Input 
+                            id="individual-location" 
+                            type="text" 
+                            placeholder="e.g., Tokyo, Japan"
+                            value={selectedImage.individualLocation} 
+                            onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualLocation', e.target.value)} 
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedTemplate !== 'memoir' && (
+                      <>
+                        <div className="space-y-2">
+                            <Label htmlFor="individual-aspect-ratio">Aspect Ratio</Label>
+                            <Select value={selectedImage.individualAspect} onValueChange={(value) => onIndividualSettingChange(selectedImage.file.name, 'individualAspect', value)}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="1:1">1:1 (Square)</SelectItem>
+                                    <SelectItem value="4:3">4:3 (Standard)</SelectItem>
+                                    <SelectItem value="16:9">16:9 (Widescreen)</SelectItem>
+                                    <SelectItem value="3:2">3:2 (Classic)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="individual-text-align">Text Alignment</Label>
+                            <Select value={selectedImage.individualAlign} onValueChange={(value) => onIndividualSettingChange(selectedImage.file.name, 'individualAlign', value as 'center' | 'left' | 'right')}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="left">Left</SelectItem>
+                                    <SelectItem value="center">Center</SelectItem>
+                                    <SelectItem value="right">Right</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                      </>
+                    )}
                 </div>
 
-                <Separator/>
+                {selectedTemplate !== 'memoir' && (
+                  <>
+                    <Separator/>
+                    <div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="individual-padding-top">Padding Top</Label>
+                                <Input id="individual-padding-top" type="number" value={selectedImage.individualPaddingTop} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualPaddingTop', Number(e.target.value))} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="individual-padding-bottom">Padding Bottom</Label>
+                                <Input id="individual-padding-bottom" type="number" value={selectedImage.individualPaddingBottom} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualPaddingBottom', Number(e.target.value))} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="individual-padding-left">Padding Left</Label>
+                                <Input id="individual-padding-left" type="number" value={selectedImage.individualPaddingLeft} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualPaddingLeft', Number(e.target.value))} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="individual-padding-right">Padding Right</Label>
+                                <Input id="individual-padding-right" type="number" value={selectedImage.individualPaddingRight} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualPaddingRight', Number(e.target.value))} />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 mt-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="individual-padding-top-text">Gap Between Image and Text</Label>
+                                <Input id="individual-padding-top-text" type="number" value={selectedImage.individualPaddingTopText} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualPaddingTopText', Number(e.target.value))} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="individual-padding-between-text-lines">Title to Metadata Gap</Label>
+                                <Input id="individual-padding-between-text-lines" type="number" value={selectedImage.individualPaddingBetweenTextLines} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualPaddingBetweenTextLines', Number(e.target.value))} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="individual-padding-between-meta-data">Metadata Line Spacing</Label>
+                                <Input id="individual-padding-between-meta-data" type="number" value={selectedImage.individualPaddingBetweenMetaData} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualPaddingBetweenMetaData', Number(e.target.value))} />
+                            </div>
+                        </div>
+                    </div>
 
-                <div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="individual-padding-top">Padding Top</Label>
-                            <Input id="individual-padding-top" type="number" value={selectedImage.individualPaddingTop} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualPaddingTop', Number(e.target.value))} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="individual-padding-bottom">Padding Bottom</Label>
-                            <Input id="individual-padding-bottom" type="number" value={selectedImage.individualPaddingBottom} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualPaddingBottom', Number(e.target.value))} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="individual-padding-left">Padding Left</Label>
-                            <Input id="individual-padding-left" type="number" value={selectedImage.individualPaddingLeft} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualPaddingLeft', Number(e.target.value))} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="individual-padding-right">Padding Right</Label>
-                            <Input id="individual-padding-right" type="number" value={selectedImage.individualPaddingRight} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualPaddingRight', Number(e.target.value))} />
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 mt-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="individual-padding-top-text">Gap Between Image and Text</Label>
-                            <Input id="individual-padding-top-text" type="number" value={selectedImage.individualPaddingTopText} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualPaddingTopText', Number(e.target.value))} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="individual-padding-between-text-lines">Title to Metadata Gap</Label>
-                            <Input id="individual-padding-between-text-lines" type="number" value={selectedImage.individualPaddingBetweenTextLines} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualPaddingBetweenTextLines', Number(e.target.value))} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="individual-padding-between-meta-data">Metadata Line Spacing</Label>
-                            <Input id="individual-padding-between-meta-data" type="number" value={selectedImage.individualPaddingBetweenMetaData} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualPaddingBetweenMetaData', Number(e.target.value))} />
-                        </div>
-                    </div>
-                </div>
+                    <Separator/>
 
-                <Separator/>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="individual-font-size-main">Title Font Size</Label>
-                        <Input id="individual-font-size-main" type="number" value={selectedImage.individualFontSizeMain} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualFontSizeMain', Number(e.target.value))} />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="individual-font-size-main">Title Font Size</Label>
+                            <Input id="individual-font-size-main" type="number" value={selectedImage.individualFontSizeMain} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualFontSizeMain', Number(e.target.value))} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="individual-font-size-meta">Metadata Font Size</Label>
+                            <Input id="individual-font-size-meta" type="number" value={selectedImage.individualFontSizeMeta} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualFontSizeMeta', Number(e.target.value))} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="individual-jpeg-quality">Export Quality</Label>
+                            <Input id="individual-jpeg-quality" type="number" step="0.1" min="0.1" max="1.0" value={selectedImage.individualJpegQuality} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualJpegQuality', Number(e.target.value))} />
+                        </div>
                     </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="individual-font-size-meta">Metadata Font Size</Label>
-                        <Input id="individual-font-size-meta" type="number" value={selectedImage.individualFontSizeMeta} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualFontSizeMeta', Number(e.target.value))} />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="individual-jpeg-quality">Export Quality</Label>
-                        <Input id="individual-jpeg-quality" type="number" step="0.1" min="0.1" max="1.0" value={selectedImage.individualJpegQuality} onChange={(e) => onIndividualSettingChange(selectedImage.file.name, 'individualJpegQuality', Number(e.target.value))} />
-                    </div>
-                </div>
+                  </>
+                )}
             </CardContent>
           </Card>
           <div className="space-y-4">
@@ -206,6 +236,7 @@ export default function IndividualSettingsPanel({
               globalFontSizeMain={globalSettings.fontSizeMain}
               globalFontSizeMeta={globalSettings.fontSizeMeta}
               globalJpegQuality={globalSettings.jpegQuality}
+              globalLocation={globalSettings.location}
               setCanvasRef={(key, node) => {
                 if (node) {
                   node.setAttribute('data-image-id', `${selectedImage.file.name}-individual-preview`);

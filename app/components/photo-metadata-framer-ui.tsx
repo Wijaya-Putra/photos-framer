@@ -16,6 +16,7 @@ import {
   FileImage,
   DownloadCloud,
   RotateCcw,
+  Palette,
 } from "lucide-react";
 import GlobalSettingsPanel from './config/global-settings-panel';
 import IndividualSettingsPanel from './config/individual-settings-panel';
@@ -23,10 +24,12 @@ import FileUploadSummary from './file-upload-summary';
 import ImageCard from './image-card';
 import ClassicTemplate from './templates/classic-template';
 import MinimalistTemplate from './templates/minimalist-template';
+import MemoirTemplate from './templates/memoir-template';
 
 const templateMap: Record<TemplateName, React.ComponentType<any>> = {
   classic: ClassicTemplate,
   minimalist: MinimalistTemplate,
+  memoir: MemoirTemplate,
 };
 
 interface PhotoMetadataFramerUIProps {
@@ -44,7 +47,7 @@ interface PhotoMetadataFramerUIProps {
   selectedTemplate: TemplateName;
   setSelectedTemplate: (template: TemplateName) => void;
   setCanvasRef: (key: string, node: HTMLCanvasElement | null) => void;
-  onIndividualSettingChange: (imageId: string, settingName: keyof Omit<ImageData, 'file' | 'url' | 'make' | 'model' | 'focalLength' | 'aperture' | 'shutter' | 'iso'>, newValue: any) => void;
+  onIndividualSettingChange: (imageId: string, settingName: keyof Omit<ImageData, 'file' | 'url' | 'make' | 'model' | 'focalLength' | 'aperture' | 'shutter' | 'iso' | 'dateTimeOriginal' | 'dominantColors'>, newValue: any) => void;
 }
 
 export default function PhotoMetadataFramerUI({
@@ -199,6 +202,7 @@ export default function PhotoMetadataFramerUI({
                   globalFontSizeMain={globalSettings.fontSizeMain}
                   globalFontSizeMeta={globalSettings.fontSizeMeta}
                   globalJpegQuality={globalSettings.jpegQuality}
+                  globalLocation={globalSettings.location}
                   setCanvasRef={setCanvasRef}
                   TemplateComponent={SelectedTemplateComponent}
                 />

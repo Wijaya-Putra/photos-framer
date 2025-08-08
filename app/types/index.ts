@@ -1,7 +1,6 @@
 // app/types/index.ts
 
-// Add this type definition
-export type TemplateName = 'classic' | 'minimalist';
+export type TemplateName = 'classic' | 'minimalist' | 'memoir';
 
 export interface ImageData {
   file: File;
@@ -12,6 +11,8 @@ export interface ImageData {
   aperture: string;
   shutter: string;
   iso: string;
+  dateTimeOriginal?: Date;
+  dominantColors: string[]; // This will hold the extracted colors
   individualAspect: string;
   individualAlign: 'center' | 'left' | 'right';
   individualPaddingTop: number;
@@ -24,4 +25,5 @@ export interface ImageData {
   individualFontSizeMain: number;
   individualFontSizeMeta: number;
   individualJpegQuality: number;
+  individualLocation: string;
 }

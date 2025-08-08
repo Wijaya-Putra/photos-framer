@@ -44,7 +44,7 @@ export default function Home() {
         <div className="w-full md:w-1/2 flex justify-center items-center p-4 mt-8 md:mt-0">
           <div className="shadow-lg w-full max-w-xs sm:max-w-sm md:max-w-md flex md:scale-150">
             <Image
-              src="/images/preview-2.png"
+              src="/images/preview/preview-2.png"
               width={1866}
               height={2048}
               quality={100}

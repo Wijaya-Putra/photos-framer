@@ -1,7 +1,7 @@
 // app/hooks/useImageProcessor.ts
 'use client'
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { extractMetadata } from '../lib/metadata';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
@@ -12,7 +12,6 @@ export function useImageProcessor() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [filesUploaded, setFilesUploaded] = useState(false);
 
-  // Default values for easy reset
   const defaultGlobalSettings = {
     aspect: '1:1',
     align: 'center' as 'center' | 'left' | 'right',
@@ -26,6 +25,7 @@ export function useImageProcessor() {
     fontSizeMain: 36,
     fontSizeMeta: 26,
     jpegQuality: 0.9,
+    location: 'Tokyo, Japan',
   };
 
   const [globalAspect, setGlobalAspect] = useState(defaultGlobalSettings.aspect);
@@ -40,6 +40,7 @@ export function useImageProcessor() {
   const [globalFontSizeMain, setGlobalFontSizeMain] = useState(defaultGlobalSettings.fontSizeMain);
   const [globalFontSizeMeta, setGlobalFontSizeMeta] = useState(defaultGlobalSettings.fontSizeMeta);
   const [globalJpegQuality, setGlobalJpegQuality] = useState(defaultGlobalSettings.jpegQuality);
+  const [globalLocation, setGlobalLocation] = useState(defaultGlobalSettings.location);
   
   const [activeMode, setActiveMode] = useState<'global' | 'individual'>('individual');
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
@@ -59,6 +60,7 @@ export function useImageProcessor() {
     setGlobalFontSizeMain(defaultGlobalSettings.fontSizeMain);
     setGlobalFontSizeMeta(defaultGlobalSettings.fontSizeMeta);
     setGlobalJpegQuality(defaultGlobalSettings.jpegQuality);
+    setGlobalLocation(defaultGlobalSettings.location);
   };
 
   const setCanvasRef = useCallback((key: string, node: HTMLCanvasElement | null) => {
@@ -97,18 +99,21 @@ export function useImageProcessor() {
           aperture: metadata.aperture || '',
           shutter: metadata.shutter || '',
           iso: metadata.iso || '',
-          individualAspect: globalAspect,
-          individualAlign: globalAlign,
-          individualPaddingTop: globalPaddingTop,
-          individualPaddingBottom: globalPaddingBottom,
-          individualPaddingLeft: globalPaddingLeft,
-          individualPaddingRight: globalPaddingRight,
-          individualPaddingTopText: globalPaddingTopText,
-          individualPaddingBetweenTextLines: globalPaddingBetweenTextLines,
-          individualPaddingBetweenMetaData: globalPaddingBetweenMetaData,
-          individualFontSizeMain: globalFontSizeMain,
-          individualFontSizeMeta: globalFontSizeMeta,
-          individualJpegQuality: globalJpegQuality,
+          dateTimeOriginal: metadata.dateTimeOriginal,
+          dominantColors: [], // Initialize with an empty array
+          individualAspect: defaultGlobalSettings.aspect,
+          individualAlign: defaultGlobalSettings.align,
+          individualPaddingTop: defaultGlobalSettings.paddingTop,
+          individualPaddingBottom: defaultGlobalSettings.paddingBottom,
+          individualPaddingLeft: defaultGlobalSettings.paddingLeft,
+          individualPaddingRight: defaultGlobalSettings.paddingRight,
+          individualPaddingTopText: defaultGlobalSettings.paddingTopText,
+          individualPaddingBetweenTextLines: defaultGlobalSettings.paddingBetweenTextLines,
+          individualPaddingBetweenMetaData: defaultGlobalSettings.paddingBetweenMetaData,
+          individualFontSizeMain: defaultGlobalSettings.fontSizeMain,
+          individualFontSizeMeta: defaultGlobalSettings.fontSizeMeta,
+          individualJpegQuality: defaultGlobalSettings.jpegQuality,
+          individualLocation: defaultGlobalSettings.location,
         };
       })
     );
@@ -124,6 +129,15 @@ export function useImageProcessor() {
     } else {
       setActiveMode('individual');
     }
+  };
+
+  const updateImageWithColors = (imageId: string, colors: string[]) => {
+    setImages(prevImages => prevImages.map(img => {
+      if (img.file.name === imageId && img.dominantColors.length === 0) {
+        return { ...img, dominantColors: colors };
+      }
+      return img;
+    }));
   };
 
   const downloadAllToZip = useCallback(async () => {
@@ -151,7 +165,7 @@ export function useImageProcessor() {
 
   const handleIndividualSettingChange = useCallback((
     imageId: string,
-    settingName: keyof Omit<ImageData, 'file' | 'url' | 'make' | 'model' | 'focalLength' | 'aperture' | 'shutter' | 'iso'>,
+    settingName: keyof Omit<ImageData, 'file' | 'url' | 'make' | 'model' | 'focalLength' | 'aperture' | 'shutter' | 'iso' | 'dateTimeOriginal' | 'dominantColors'>,
     newValue: any
   ) => {
     setImages(prevImages => prevImages.map(img => {
@@ -175,6 +189,7 @@ export function useImageProcessor() {
     fontSizeMain: globalFontSizeMain, setFontSizeMain: setGlobalFontSizeMain,
     fontSizeMeta: globalFontSizeMeta, setFontSizeMeta: setGlobalFontSizeMeta,
     jpegQuality: globalJpegQuality, setJpegQuality: setGlobalJpegQuality,
+    location: globalLocation, setLocation: setGlobalLocation,
   };
 
   return {
@@ -188,12 +203,13 @@ export function useImageProcessor() {
     selectedTemplate,
     setSelectedTemplate,
     globalSettings,
-    resetGlobalSettings, // Expose the reset function
+    resetGlobalSettings,
     handleUploadClick,
     handleUpload,
     downloadAllToZip,
     handleIndividualSettingChange,
     setCanvasRef,
     clearImages,
+    updateImageWithColors, // Expose the new function
   };
 }
