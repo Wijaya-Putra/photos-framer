@@ -7,6 +7,8 @@ import Link from "next/link";
 export default function Home() {
   return (
     <main className="flex flex-col min-h-[100dvh]">
+
+      {/* Hero Landing Page */}
       <div className="min-h-[calc(100vh-var(--navbar-height))] flex flex-col-reverse md:flex-row bg-gradient-to-br from-slate-50 to-slate-10">
 
         {/* Left Section (Text Content) */}
@@ -42,6 +44,19 @@ export default function Home() {
           </div>
         </div>
 
+      </div>
+
+      <div className="min-h-screen flex flex-col-reverse justify-center items-center md:flex-row bg-gradient-to-br from-slate-50 to-slate-10">
+        
+        {/* Title */}
+        <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
+          Preview
+        </h1>
+
+        {/* Infinite Scrolling */}
+        <div className="">
+          
+        </div>
       </div>
     </main>
   );
