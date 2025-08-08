@@ -1,4 +1,4 @@
-// app/hooks/useImageProcessor.ts
+// app/hooks/use-image-processor.ts
 'use client'
 
 import { useState, useRef, useCallback } from 'react';
@@ -6,6 +6,7 @@ import { extractMetadata } from '../lib/metadata';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { ImageData, TemplateName } from '../types';
+import { prominent } from 'color.js'
 
 export function useImageProcessor() {
   const [images, setImages] = useState<ImageData[]>([]);
@@ -72,6 +73,7 @@ export function useImageProcessor() {
   };
   
   const clearImages = () => {
+    images.forEach(image => URL.revokeObjectURL(image.url));
     setImages([]);
     setSelectedImageId(null);
     setFilesUploaded(false);
@@ -85,9 +87,10 @@ export function useImageProcessor() {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
+    clearImages();
     setFilesUploaded(true);
 
-    const processed = await Promise.all(
+    const initialProcessed = await Promise.all(
       files.map(async (file) => {
         const metadata = await extractMetadata(file);
         return {
@@ -100,7 +103,7 @@ export function useImageProcessor() {
           shutter: metadata.shutter || '',
           iso: metadata.iso || '',
           dateTimeOriginal: metadata.dateTimeOriginal,
-          dominantColors: [], // Initialize with an empty array
+          dominantColors: [],
           individualAspect: defaultGlobalSettings.aspect,
           individualAlign: defaultGlobalSettings.align,
           individualPaddingTop: defaultGlobalSettings.paddingTop,
@@ -117,33 +120,34 @@ export function useImageProcessor() {
         };
       })
     );
+    
+    setImages(initialProcessed);
 
-    setImages(processed);
-    canvasRefs.current = {};
-    if (processed.length > 0) {
-      setSelectedImageId(processed[0].file.name);
+    if (initialProcessed.length > 0) {
+      setSelectedImageId(initialProcessed[0].file.name);
     }
     
-    if (files.length > 1) {
-      setActiveMode('global');
-    } else {
-      setActiveMode('individual');
-    }
-  };
+    setActiveMode(files.length > 1 ? 'global' : 'individual');
 
-  const updateImageWithColors = (imageId: string, colors: string[]) => {
-    setImages(prevImages => prevImages.map(img => {
-      if (img.file.name === imageId && img.dominantColors.length === 0) {
-        return { ...img, dominantColors: colors };
-      }
-      return img;
-    }));
+    const imagesWithColors = await Promise.all(
+      initialProcessed.map(async (image) => {
+        try {
+          // NEW: Using color.js to get the top 3 colors
+          const colors = await prominent(image.url, { amount: 3, format: 'hex' });
+          return { ...image, dominantColors: colors };
+        } catch (error) {
+          console.error(`Error extracting colors for ${image.file.name}:`, error);
+          return image;
+        }
+      })
+    );
+    
+    setImages(imagesWithColors);
   };
 
   const downloadAllToZip = useCallback(async () => {
     if (images.length === 0) return;
     const zip = new JSZip();
-    let processedCount = 0;
     for (const imgData of images) {
       const canvas = canvasRefs.current[imgData.file.name];
       if (canvas) {
@@ -152,15 +156,11 @@ export function useImageProcessor() {
         );
         if (blob) {
           zip.file(`framed-${imgData.file.name.replace(/\.[^/.]+$/, "")}.jpeg`, blob);
-          processedCount++;
         }
       }
     }
-    if (processedCount > 0) {
-      zip.generateAsync({ type: 'blob' }).then((content) => {
-        saveAs(content, 'framed_images.zip');
-      });
-    }
+    const content = await zip.generateAsync({ type: 'blob' });
+    saveAs(content, 'framed_images.zip');
   }, [images]);
 
   const handleIndividualSettingChange = useCallback((
@@ -210,6 +210,5 @@ export function useImageProcessor() {
     handleIndividualSettingChange,
     setCanvasRef,
     clearImages,
-    updateImageWithColors, // Expose the new function
   };
 }

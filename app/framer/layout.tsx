@@ -3,7 +3,7 @@ import { Navbar } from "../components/Navbar";
 import { Open_Sans } from "next/font/google";
 
 const openSans = Open_Sans({
-  variable: "--font-geist-sans",
+  variable: "--font-open-sans", // Use a more descriptive name
   subsets: ["latin"],
 });
 
