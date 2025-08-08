@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Separator } from "../ui/separator"
 import { Download, ImageIcon, Palette, RotateCcw } from "lucide-react"
 import ImageCard from "../image-card"
-import { ImageData } from "@/app/types"
+import { ImageData, TemplateName } from "@/app/types"
 
 interface IndividualSettingsPanelProps {
   images: ImageData[];
@@ -18,6 +18,9 @@ interface IndividualSettingsPanelProps {
   setCanvasRef: (key: string, node: HTMLCanvasElement | null) => void;
   onIndividualSettingChange: (imageId: string, settingName: keyof Omit<ImageData, 'file' | 'url' | 'make' | 'model' | 'focalLength' | 'aperture' | 'shutter' | 'iso'>, newValue: any) => void;
   globalSettings: any;
+  TemplateComponent: React.ComponentType<any>;
+  selectedTemplate: TemplateName;
+  setSelectedTemplate: (template: TemplateName) => void;
 }
 
 export default function IndividualSettingsPanel({
@@ -27,6 +30,9 @@ export default function IndividualSettingsPanel({
   setCanvasRef,
   onIndividualSettingChange,
   globalSettings,
+  TemplateComponent,
+  selectedTemplate,
+  setSelectedTemplate,
 }: IndividualSettingsPanelProps) {
 
   const selectedImage = images.find(img => img.file.name === selectedImageId);
@@ -103,6 +109,26 @@ export default function IndividualSettingsPanel({
                                 <SelectItem value="left">Left</SelectItem>
                                 <SelectItem value="center">Center</SelectItem>
                                 <SelectItem value="right">Right</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-2 md:col-span-2">
+                        <Label htmlFor="template-select">Template</Label>
+                        <Select value={selectedTemplate} onValueChange={(value) => setSelectedTemplate(value as TemplateName)}>
+                            <SelectTrigger id="template-select" className="w-full">
+                                <SelectValue placeholder="Select a template" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="classic">
+                                    <div className="flex items-center gap-2">
+                                        <Palette className="h-4 w-4" /> Classic White
+                                    </div>
+                                </SelectItem>
+                                <SelectItem value="minimalist">
+                                    <div className="flex items-center gap-2">
+                                        <Palette className="h-4 w-4" /> Minimalist Gray
+                                    </div>
+                                </SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -185,6 +211,7 @@ export default function IndividualSettingsPanel({
                   node.setAttribute('data-image-id', `${selectedImage.file.name}-individual-preview`);
                 }
               }}
+              TemplateComponent={TemplateComponent}
             />
             <Button className="w-full mt-4 gap-2" onClick={handleDownloadIndividual}>
                 <Download className="h-4 w-4" />

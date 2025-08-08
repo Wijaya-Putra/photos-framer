@@ -1,4 +1,8 @@
 // app/types/index.ts
+
+// Add this type definition
+export type TemplateName = 'classic' | 'minimalist';
+
 export interface ImageData {
   file: File;
   url: string;

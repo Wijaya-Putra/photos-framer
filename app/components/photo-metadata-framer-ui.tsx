@@ -1,9 +1,10 @@
 // app/components/PhotoMetadataFramerUI.tsx
 'use client'
 
-import { ImageData } from '@/app/types';
+import React from 'react';
+import { ImageData, TemplateName } from '@/app/types';
 import { Button } from "./ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardAction } from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Badge } from "./ui/badge";
 import {
@@ -14,11 +15,19 @@ import {
   Settings,
   FileImage,
   DownloadCloud,
+  RotateCcw,
 } from "lucide-react";
 import GlobalSettingsPanel from './config/global-settings-panel';
 import IndividualSettingsPanel from './config/individual-settings-panel';
 import FileUploadSummary from './file-upload-summary';
 import ImageCard from './image-card';
+import ClassicTemplate from './templates/classic-template';
+import MinimalistTemplate from './templates/minimalist-template';
+
+const templateMap: Record<TemplateName, React.ComponentType<any>> = {
+  classic: ClassicTemplate,
+  minimalist: MinimalistTemplate,
+};
 
 interface PhotoMetadataFramerUIProps {
   images: ImageData[];
@@ -29,8 +38,11 @@ interface PhotoMetadataFramerUIProps {
   activeMode: 'global' | 'individual';
   setActiveMode: (mode: 'global' | 'individual') => void;
   globalSettings: any;
+  resetGlobalSettings: () => void;
   selectedImageId: string | null;
   setSelectedImageId: (id: string | null) => void;
+  selectedTemplate: TemplateName;
+  setSelectedTemplate: (template: TemplateName) => void;
   setCanvasRef: (key: string, node: HTMLCanvasElement | null) => void;
   onIndividualSettingChange: (imageId: string, settingName: keyof Omit<ImageData, 'file' | 'url' | 'make' | 'model' | 'focalLength' | 'aperture' | 'shutter' | 'iso'>, newValue: any) => void;
 }
@@ -44,20 +56,24 @@ export default function PhotoMetadataFramerUI({
   activeMode,
   setActiveMode,
   globalSettings,
+  resetGlobalSettings,
   selectedImageId,
   setSelectedImageId,
+  selectedTemplate,
+  setSelectedTemplate,
   setCanvasRef,
   onIndividualSettingChange,
 }: PhotoMetadataFramerUIProps) {
 
   const handleModeChange = (newMode: 'global' | 'individual') => {
-    // If switching from a multi-image global view to individual, reset everything.
     if (activeMode === 'global' && newMode === 'individual' && images.length > 1) {
       clearImages();
     } else {
       setActiveMode(newMode);
     }
   };
+
+  const SelectedTemplateComponent = templateMap[selectedTemplate];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4">
@@ -93,8 +109,16 @@ export default function PhotoMetadataFramerUI({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Settings className="h-5 w-5" />
-              Configuration Mode
+              Configuration
             </CardTitle>
+            <CardAction>
+              {activeMode === 'global' && (
+                <Button variant="outline" size="sm" onClick={resetGlobalSettings}>
+                  <RotateCcw className="h-4 w-4 mr-2"/>
+                  Reset Global Config
+                </Button>
+              )}
+            </CardAction>
           </CardHeader>
           <CardContent>
             <Tabs value={activeMode} onValueChange={(value) => handleModeChange(value as 'global' | 'individual')} className="w-full">
@@ -122,10 +146,17 @@ export default function PhotoMetadataFramerUI({
                   onIndividualSettingChange={onIndividualSettingChange}
                   globalSettings={globalSettings}
                   setCanvasRef={setCanvasRef}
+                  TemplateComponent={SelectedTemplateComponent}
+                  selectedTemplate={selectedTemplate}
+                  setSelectedTemplate={setSelectedTemplate}
                 />
               </TabsContent>
               <TabsContent value="global" className="mt-6">
-                <GlobalSettingsPanel {...globalSettings} />
+                <GlobalSettingsPanel
+                  {...globalSettings}
+                  selectedTemplate={selectedTemplate}
+                  setSelectedTemplate={setSelectedTemplate}
+                />
               </TabsContent>
             </Tabs>
           </CardContent>
@@ -169,6 +200,7 @@ export default function PhotoMetadataFramerUI({
                   globalFontSizeMeta={globalSettings.fontSizeMeta}
                   globalJpegQuality={globalSettings.jpegQuality}
                   setCanvasRef={setCanvasRef}
+                  TemplateComponent={SelectedTemplateComponent}
                 />
               ))}
             </div>

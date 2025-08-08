@@ -5,8 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
 import { Label } from "../ui/label"
 import { Input } from "../ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
-import { Button } from "../ui/button"
-import { Layout, Sliders, Type, RotateCcw } from "lucide-react"
+import { Layout, Sliders, Type, Palette } from "lucide-react"
+import { TemplateName } from "@/app/types"
 
 interface GlobalSettingsPanelProps {
   aspect: string; setAspect: (value: string) => void;
@@ -21,6 +21,8 @@ interface GlobalSettingsPanelProps {
   fontSizeMain: number; setFontSizeMain: (value: number) => void;
   fontSizeMeta: number; setFontSizeMeta: (value: number) => void;
   jpegQuality: number; setJpegQuality: (value: number) => void;
+  selectedTemplate: TemplateName;
+  setSelectedTemplate: (template: TemplateName) => void;
 }
 
 export default function GlobalSettingsPanel({
@@ -36,37 +38,39 @@ export default function GlobalSettingsPanel({
   fontSizeMain, setFontSizeMain,
   fontSizeMeta, setFontSizeMeta,
   jpegQuality, setJpegQuality,
+  selectedTemplate, setSelectedTemplate,
 }: GlobalSettingsPanelProps) {
-  
-  const resetToDefaults = () => {
-    setAspect('1:1');
-    setAlign('center');
-    setPaddingTop(46);
-    setPaddingBottom(46);
-    setPaddingLeft(46);
-    setPaddingRight(46);
-    setPaddingTopText(71);
-    setPaddingBetweenTextLines(12);
-    setPaddingBetweenMetaData(12);
-    setFontSizeMain(36);
-    setFontSizeMeta(26);
-    setJpegQuality(0.9);
-  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <Card>
-        <CardHeader className="pb-3 flex-row items-center justify-between">
+        <CardHeader className="pb-3">
           <CardTitle className="text-sm flex items-center gap-2">
             <Layout className="h-4 w-4" />
             Frame Layout
           </CardTitle>
-          <Button variant="outline" size="sm" onClick={resetToDefaults}>
-            <RotateCcw className="h-4 w-4 mr-2"/>
-            Reset
-          </Button>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className='space-y-2'>
+            <Label htmlFor="template-select">Template</Label>
+            <Select value={selectedTemplate} onValueChange={(value) => setSelectedTemplate(value as TemplateName)}>
+              <SelectTrigger id="template-select" className="w-full">
+                <SelectValue placeholder="Select a template" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="classic">
+                  <div className="flex items-center gap-2">
+                    <Palette className="h-4 w-4" /> Classic White
+                  </div>
+                </SelectItem>
+                <SelectItem value="minimalist">
+                  <div className="flex items-center gap-2">
+                    <Palette className="h-4 w-4" /> Minimalist Gray
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <div className="space-y-2">
             <Label htmlFor="aspect-ratio">Aspect Ratio</Label>
             <Select value={aspect} onValueChange={setAspect}>
@@ -124,7 +128,6 @@ export default function GlobalSettingsPanel({
             <Label htmlFor="image-gap">Gap Between Image and Text</Label>
             <Input id="image-gap" type="number" value={paddingTopText} onChange={(e) => setPaddingTopText(Number(e.target.value))} />
           </div>
-          {/* --- RESTORED FIELDS --- */}
           <div className="space-y-2">
             <Label htmlFor="meta-gap">Title to Metadata Gap</Label>
             <Input id="meta-gap" type="number" value={paddingBetweenTextLines} onChange={(e) => setPaddingBetweenTextLines(Number(e.target.value))} />

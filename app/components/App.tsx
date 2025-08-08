@@ -14,7 +14,10 @@ export default function App() {
     setActiveMode,
     selectedImageId,
     setSelectedImageId,
+    selectedTemplate,
+    setSelectedTemplate,
     globalSettings,
+    resetGlobalSettings, // Get the new function
     handleUploadClick,
     handleUpload,
     downloadAllToZip,
@@ -41,8 +44,11 @@ export default function App() {
         activeMode={activeMode}
         setActiveMode={setActiveMode}
         globalSettings={globalSettings}
+        resetGlobalSettings={resetGlobalSettings} // Pass it down
         selectedImageId={selectedImageId}
         setSelectedImageId={setSelectedImageId}
+        selectedTemplate={selectedTemplate}
+        setSelectedTemplate={setSelectedTemplate}
         setCanvasRef={setCanvasRef}
         onIndividualSettingChange={handleIndividualSettingChange}
       />

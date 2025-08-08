@@ -5,29 +5,61 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { extractMetadata } from '../lib/metadata';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
-import { ImageData } from '../types';
+import { ImageData, TemplateName } from '../types';
 
 export function useImageProcessor() {
   const [images, setImages] = useState<ImageData[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [filesUploaded, setFilesUploaded] = useState(false);
 
-  const [globalAspect, setGlobalAspect] = useState('1:1');
-  const [globalAlign, setGlobalAlign] = useState<'center' | 'left' | 'right'>('center');
-  const [globalPaddingTop, setGlobalPaddingTop] = useState(46);
-  const [globalPaddingBottom, setGlobalPaddingBottom] = useState(46);
-  const [globalPaddingLeft, setGlobalPaddingLeft] = useState(46);
-  const [globalPaddingRight, setGlobalPaddingRight] = useState(46);
-  const [globalPaddingTopText, setGlobalPaddingTopText] = useState(71);
-  const [globalPaddingBetweenTextLines, setGlobalPaddingBetweenTextLines] = useState(12);
-  const [globalPaddingBetweenMetaData, setGlobalPaddingBetweenMetaData] = useState(12);
-  const [globalFontSizeMain, setGlobalFontSizeMain] = useState(36);
-  const [globalFontSizeMeta, setGlobalFontSizeMeta] = useState(26);
-  const [globalJpegQuality, setGlobalJpegQuality] = useState(0.9);
+  // Default values for easy reset
+  const defaultGlobalSettings = {
+    aspect: '1:1',
+    align: 'center' as 'center' | 'left' | 'right',
+    paddingTop: 46,
+    paddingBottom: 46,
+    paddingLeft: 46,
+    paddingRight: 46,
+    paddingTopText: 71,
+    paddingBetweenTextLines: 12,
+    paddingBetweenMetaData: 12,
+    fontSizeMain: 36,
+    fontSizeMeta: 26,
+    jpegQuality: 0.9,
+  };
+
+  const [globalAspect, setGlobalAspect] = useState(defaultGlobalSettings.aspect);
+  const [globalAlign, setGlobalAlign] = useState(defaultGlobalSettings.align);
+  const [globalPaddingTop, setGlobalPaddingTop] = useState(defaultGlobalSettings.paddingTop);
+  const [globalPaddingBottom, setGlobalPaddingBottom] = useState(defaultGlobalSettings.paddingBottom);
+  const [globalPaddingLeft, setGlobalPaddingLeft] = useState(defaultGlobalSettings.paddingLeft);
+  const [globalPaddingRight, setGlobalPaddingRight] = useState(defaultGlobalSettings.paddingRight);
+  const [globalPaddingTopText, setGlobalPaddingTopText] = useState(defaultGlobalSettings.paddingTopText);
+  const [globalPaddingBetweenTextLines, setGlobalPaddingBetweenTextLines] = useState(defaultGlobalSettings.paddingBetweenTextLines);
+  const [globalPaddingBetweenMetaData, setGlobalPaddingBetweenMetaData] = useState(defaultGlobalSettings.paddingBetweenMetaData);
+  const [globalFontSizeMain, setGlobalFontSizeMain] = useState(defaultGlobalSettings.fontSizeMain);
+  const [globalFontSizeMeta, setGlobalFontSizeMeta] = useState(defaultGlobalSettings.fontSizeMeta);
+  const [globalJpegQuality, setGlobalJpegQuality] = useState(defaultGlobalSettings.jpegQuality);
   
   const [activeMode, setActiveMode] = useState<'global' | 'individual'>('individual');
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<TemplateName>('classic');
   const canvasRefs = useRef<Record<string, HTMLCanvasElement | null>>({});
+
+  const resetGlobalSettings = () => {
+    setGlobalAspect(defaultGlobalSettings.aspect);
+    setGlobalAlign(defaultGlobalSettings.align);
+    setGlobalPaddingTop(defaultGlobalSettings.paddingTop);
+    setGlobalPaddingBottom(defaultGlobalSettings.paddingBottom);
+    setGlobalPaddingLeft(defaultGlobalSettings.paddingLeft);
+    setGlobalPaddingRight(defaultGlobalSettings.paddingRight);
+    setGlobalPaddingTopText(defaultGlobalSettings.paddingTopText);
+    setGlobalPaddingBetweenTextLines(defaultGlobalSettings.paddingBetweenTextLines);
+    setGlobalPaddingBetweenMetaData(defaultGlobalSettings.paddingBetweenMetaData);
+    setGlobalFontSizeMain(defaultGlobalSettings.fontSizeMain);
+    setGlobalFontSizeMeta(defaultGlobalSettings.fontSizeMeta);
+    setGlobalJpegQuality(defaultGlobalSettings.jpegQuality);
+  };
 
   const setCanvasRef = useCallback((key: string, node: HTMLCanvasElement | null) => {
     canvasRefs.current[key] = node;
@@ -115,7 +147,7 @@ export function useImageProcessor() {
         saveAs(content, 'framed_images.zip');
       });
     }
-  }, [images]); // Added images dependency
+  }, [images]);
 
   const handleIndividualSettingChange = useCallback((
     imageId: string,
@@ -128,7 +160,7 @@ export function useImageProcessor() {
       }
       return img;
     }));
-  }, []); // This is correct with the functional update
+  }, []);
 
   const globalSettings = {
     aspect: globalAspect, setAspect: setGlobalAspect,
@@ -153,7 +185,10 @@ export function useImageProcessor() {
     setActiveMode,
     selectedImageId,
     setSelectedImageId,
+    selectedTemplate,
+    setSelectedTemplate,
     globalSettings,
+    resetGlobalSettings, // Expose the reset function
     handleUploadClick,
     handleUpload,
     downloadAllToZip,
