@@ -99,7 +99,7 @@
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
   --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-2: oclch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
@@ -119,5 +119,31 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@keyframes infinite-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-infinite-scroll {
+  display: flex;
+  width: max-content;
+  animation-name: infinite-scroll;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  
+  /* Mobile speed (5 seconds) */
+  animation-duration: 25s;
+}
+
+@media (min-width: 768px) {
+  .animate-infinite-scroll {
+    animation-duration: 30s;
   }
 }
