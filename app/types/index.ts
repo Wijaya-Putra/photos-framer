@@ -1,6 +1,6 @@
 // app/types/index.ts
 
-export type TemplateName = 'classic' | 'minimalist' | 'memoir';
+export type TemplateName = 'classic' | 'memoir';
 
 export interface ImageData {
   file: File;

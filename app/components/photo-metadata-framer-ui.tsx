@@ -23,12 +23,10 @@ import IndividualSettingsPanel from './config/individual-settings-panel';
 import FileUploadSummary from './file-upload-summary';
 import ImageCard from './image-card';
 import ClassicTemplate from './templates/classic-template';
-import MinimalistTemplate from './templates/minimalist-template';
 import MemoirTemplate from './templates/memoir-template';
 
 const templateMap: Record<TemplateName, React.ComponentType<any>> = {
   classic: ClassicTemplate,
-  minimalist: MinimalistTemplate,
   memoir: MemoirTemplate,
 };
 

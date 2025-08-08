@@ -102,11 +102,6 @@ export default function IndividualSettingsPanel({
                                         <Palette className="h-4 w-4" /> Classic White
                                     </div>
                                 </SelectItem>
-                                <SelectItem value="minimalist">
-                                    <div className="flex items-center gap-2">
-                                        <Palette className="h-4 w-4" /> Minimalist Gray
-                                    </div>
-                                </SelectItem>
                                 <SelectItem value="memoir">
                                     <div className="flex items-center gap-2">
                                         <Palette className="h-4 w-4" /> Memoir Vertical
