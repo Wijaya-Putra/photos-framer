@@ -6,7 +6,26 @@ import { extractMetadata } from '../lib/metadata';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { ImageData, TemplateName } from '../types';
-import { prominent } from 'color.js'
+import { prominent } from 'color.js';
+
+async function getLocationFromCoords(latitude: number, longitude: number): Promise<string> {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`
+    );
+    if (!response.ok) throw new Error('Failed to fetch location');
+    
+    const data = await response.json();
+    const { city, town, village, country } = data.address;
+    
+    const locationCity = city || town || village || '';
+    return [locationCity, country].filter(Boolean).join(', ');
+
+  } catch (error) {
+    console.error('Reverse geocoding failed:', error);
+    return `Lat: ${latitude.toFixed(2)}, Lon: ${longitude.toFixed(2)}`;
+  }
+}
 
 export function useImageProcessor() {
   const [images, setImages] = useState<ImageData[]>([]);
@@ -90,7 +109,7 @@ export function useImageProcessor() {
     clearImages();
     setFilesUploaded(true);
 
-    const initialProcessed = await Promise.all(
+    let initialImages = await Promise.all(
       files.map(async (file) => {
         const metadata = await extractMetadata(file);
         return {
@@ -103,7 +122,10 @@ export function useImageProcessor() {
           shutter: metadata.shutter || '',
           iso: metadata.iso || '',
           dateTimeOriginal: metadata.dateTimeOriginal,
-          dominantColors: [],
+          latitude: metadata.latitude,
+          longitude: metadata.longitude,
+          // THE FIX: Explicitly type the empty array
+          dominantColors: [] as string[],
           individualAspect: defaultGlobalSettings.aspect,
           individualAlign: defaultGlobalSettings.align,
           individualPaddingTop: defaultGlobalSettings.paddingTop,
@@ -121,28 +143,35 @@ export function useImageProcessor() {
       })
     );
     
-    setImages(initialProcessed);
-
-    if (initialProcessed.length > 0) {
-      setSelectedImageId(initialProcessed[0].file.name);
+    setImages(initialImages);
+    if (initialImages.length > 0) {
+      setSelectedImageId(initialImages[0].file.name);
     }
-    
     setActiveMode(files.length > 1 ? 'global' : 'individual');
 
-    const imagesWithColors = await Promise.all(
-      initialProcessed.map(async (image) => {
-        try {
-          // NEW: Using color.js to get the top 3 colors
-          const colors = await prominent(image.url, { amount: 3, format: 'hex' });
-          return { ...image, dominantColors: colors };
-        } catch (error) {
-          console.error(`Error extracting colors for ${image.file.name}:`, error);
-          return image;
-        }
-      })
-    );
-    
-    setImages(imagesWithColors);
+    for (let i = 0; i < initialImages.length; i++) {
+      const image = initialImages[i];
+      let updatedImage = { ...image };
+
+      if (image.latitude && image.longitude) {
+        const location = await getLocationFromCoords(image.latitude, image.longitude);
+        updatedImage.individualLocation = location;
+      }
+
+      try {
+        const colors = await prominent(image.url, { amount: 3, format: 'hex' });
+        updatedImage.dominantColors = colors;
+      } catch (error) {
+        console.error(`Error extracting colors for ${image.file.name}:`, error);
+      }
+      
+      initialImages[i] = updatedImage;
+      setImages([...initialImages]);
+
+      if (i === 0) {
+        setGlobalLocation(updatedImage.individualLocation);
+      }
+    }
   };
 
   const downloadAllToZip = useCallback(async () => {
@@ -165,7 +194,7 @@ export function useImageProcessor() {
 
   const handleIndividualSettingChange = useCallback((
     imageId: string,
-    settingName: keyof Omit<ImageData, 'file' | 'url' | 'make' | 'model' | 'focalLength' | 'aperture' | 'shutter' | 'iso' | 'dateTimeOriginal' | 'dominantColors'>,
+    settingName: keyof Omit<ImageData, 'file' | 'url' | 'make' | 'model' | 'focalLength' | 'aperture' | 'shutter' | 'iso' | 'dateTimeOriginal' | 'dominantColors' | 'latitude' | 'longitude'>,
     newValue: any
   ) => {
     setImages(prevImages => prevImages.map(img => {
