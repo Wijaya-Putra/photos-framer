@@ -2,8 +2,8 @@
 'use client';
 
 import { ImageData } from '@/app/types';
-import { Button } from './ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Button } from '../../ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
 import { CheckCircle, File, Upload } from 'lucide-react';
 
 interface FileUploadSummaryProps {

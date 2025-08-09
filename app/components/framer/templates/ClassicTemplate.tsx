@@ -2,7 +2,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { ImageData } from '../../types';
+import { ImageData } from '../../../types';
 
 interface Props {
   image: ImageData;

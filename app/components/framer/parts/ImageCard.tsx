@@ -1,7 +1,7 @@
 // app/components/image-card.tsx
 'use client'
 
-import { ImageData } from '../types';
+import { ImageData } from '@/app/types';
 
 interface Props {
   image: ImageData;

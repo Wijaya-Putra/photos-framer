@@ -1,5 +1,5 @@
 // app/framer/page.tsx
-import Uploader from '../components/App';
+import Uploader from '../components/framer/Framer';
 
 export default function FramerPage() {
   return (

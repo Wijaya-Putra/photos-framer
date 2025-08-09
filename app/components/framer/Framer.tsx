@@ -1,8 +1,8 @@
 // app/components/App.tsx
 'use client'
 
-import { useImageProcessor } from '@/app/hooks/use-image-processor';
-import PhotoMetadataFramerUI from './photo-metadata-framer-ui';
+import { useImageProcessor } from '@/app/hooks/useImageProcessor';
+import PhotoMetadataFramerUI from './FramerUI';
 
 export default function App() {
   const {

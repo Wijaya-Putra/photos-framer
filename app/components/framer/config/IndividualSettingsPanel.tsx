@@ -1,14 +1,14 @@
 // app/components/config/individual-settings-panel.tsx
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
-import { Label } from "../ui/label"
-import { Input } from "../ui/input"
-import { Button } from "../ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
-import { Separator } from "../ui/separator"
+import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card"
+import { Label } from "../../ui/label"
+import { Input } from "../../ui/input"
+import { Button } from "../../ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select"
+import { Separator } from "../../ui/separator"
 import { Download, ImageIcon, Palette, RotateCcw, MapPin } from "lucide-react"
-import ImageCard from "../image-card"
+import ImageCard from "../parts/ImageCard"
 import { ImageData, TemplateName } from "@/app/types"
 
 interface IndividualSettingsPanelProps {

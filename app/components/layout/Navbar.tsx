@@ -1,7 +1,7 @@
 // app/components/Navbar.tsx
 'use client';
 
-import { Logo } from './ui/logo';
+import { Logo } from '../ui/logo';
 import Link from 'next/link';
 
 export function Navbar() {

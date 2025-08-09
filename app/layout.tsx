@@ -1,10 +1,10 @@
 // app/layout.tsx
 import type { Metadata } from "next";
-import { Navbar } from "./components/Navbar";
+import { Navbar } from "./components/layout/Navbar";
 import { Open_Sans } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
-import SmoothScroll from './components/smooth-scroll';
+import SmoothScroll from './components/layout/SmoothScroll';
 import "./globals.css";
 
 const openSans = Open_Sans({
